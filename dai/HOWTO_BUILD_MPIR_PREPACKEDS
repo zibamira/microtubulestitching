@@ -1,0 +1,33 @@
+Download mpir version 2.2.1 from http://www.mpir.org/ and unpack.
+
+For Linux 64 build:
+Go to the main directory and type 
+./configure --enable-gmpcompat --disable-shared --enable-cxx --prefix PATH_TO_YOUR_INSTALL_FOLDER
+./make
+./make check
+./make install
+
+
+In PATH_TO_YOUR_INSTALL_FOLDER you should now have a lib and include directory which contain the files neeeded for the prepacked.
+
+Libdai will compile and link with a gcc4.1 compiler but crash when running. This is probably due to a bug which was reported here:
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20647
+Since gcc 4.4 works fine I did not look into it any further.
+
+
+For Windows:
+Open the .sln file in the build.vc9 directory.
+
+In Visual Studio, right click on the lib_mpir_core2 project and click on "Properties".
+Set "Platform" to Active(x64).
+Go to C++/"Code Generation".
+Set "Runtime Library" to "Multy-threaded Debug DLL (/MDd)" for Debug.
+Set "Runtime Library" to "Multy-threaded DLL (/MD)" for Release.
+Repeat this step for lib_mpir_cxx.
+
+Build both projects.
+
+The libraries and headers should now be in the mpir-2.2.1\build.vc9\lib\x64 folder.
+
+
+

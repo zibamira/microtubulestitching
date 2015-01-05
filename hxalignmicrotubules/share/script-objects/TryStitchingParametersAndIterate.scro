@@ -1,0 +1,174 @@
+# Amira-Script-Object V3.0
+
+$this proc constructor {} {
+
+    global AMIRA_ROOT
+ 
+    $this newPortDoIt  runButton 
+    $this runButton setLabel "Run"
+    
+    $this newPortConnection portSGStack HxSpatialGraph
+    
+
+    $this newPortText portResultFileName
+    $this newPortIntTextN  portMatchingAlgorithm  1
+    $this newPortText  portMatchingAlgorithmPairs 
+    $this newPortText portEvidenceHeuristic
+    
+     $this newPortText portVariyingParameter
+
+     
+    $this newPortIntTextN portVariyingParameterIdx 1
+    $this portVariyingParameterIdx setValue 0
+   
+    $this newPortFloatTextN portStepSize 1
+    $this portStepSize setValue 100
+
+    $this newPortFloatTextN portMinVal 1
+    $this portMinVal setValue 0
+
+    $this newPortFloatTextN portMaxVal 1
+    $this portMaxVal setValue 1000
+
+    $this newPortToggleList portUseWeights  3
+    $this portUseWeights setValue 0 1
+    $this portUseWeights setLabel 0 "3ddist"
+    $this portUseWeights setValue 1 1
+    $this portUseWeights setLabel 1 "projdist"
+    $this portUseWeights setValue 2 1
+    $this portUseWeights setLabel 2 "angle"
+
+    $this newPortFloatTextN portWeights 4
+    $this portWeights setValue 0 200
+    $this portWeights setLabel 0 "3ddist"
+    $this portWeights setValue 1 200
+    $this portWeights setLabel 1 "projdist"
+    $this portWeights setValue 2 10
+    $this portWeights setLabel 2 "angle"
+    $this portWeights setValue 3 100
+    $this portWeights setLabel 3 "pair"
+
+    $this newPortFloatTextN portDummySignificance 1
+    $this portDummySignificance setValue  0 0.01
+
+
+     
+}
+
+$this proc destructor {} {}
+
+$this proc update {} {
+
+}
+
+
+$this proc compute {} {
+
+   global AMIRA_ROOT
+
+    if { ![$this runButton wasHit] } {
+
+        return 
+    }
+
+    $this setVar evidenceHeuristic [$this portEvidenceHeuristic getValue]
+   
+    set resultSpreadSheet [create SpreadSheetWrapper]
+   
+  
+    $this initAllModules
+    set sgDuplicateWithoutEvidence [ [$this portSGStack source] duplicate]
+
+    
+    # for-schleife um verschiedene thresholds
+    for {set j [expr [$this portMinVal getValue]] } { [expr $j] < [ expr [$this portMaxVal getValue] ]  } {set j [expr $j + [$this portStepSize getValue] ]} {
+              
+      
+ 	$this portSGStack connect $sgDuplicateWithoutEvidence
+    	set sgDuplicateWithoutEvidence [ [$this portSGStack source] duplicate]
+               
+        [$this getVar algorithmRunner] [$this  portVariyingParameter getValue] setValue [$this portVariyingParameterIdx getValue] $j
+        [$this getVar algorithmRunner] fire
+	[$this getVar iterateStitchingModule] data connect  [$this portSGStack source]
+        [$this getVar iterateStitchingModule] fire
+        [$this getVar iterateStitchingModule] apply hit
+        [$this getVar iterateStitchingModule] fire
+        
+
+        
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "falsePositivePairs" "$j" "[[$this getVar stitchingGoodnessModule] falsePositivePairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "falseNegativePairs" "$j" "[[$this getVar stitchingGoodnessModule] falseNegativePairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "disagreementPairs" "$j" "[[$this getVar stitchingGoodnessModule] disagreementPairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "correctPairs" "$j" "[[$this getVar stitchingGoodnessModule] correctPairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "treeNodes" "$j" "[[$this getVar stitchingGoodnessModule] treeNodes getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "criticalNodes" "$j" "[[$this getVar stitchingGoodnessModule] criticalNodes getValue]"
+        set iterationSpreadSheet [[$this getVar iterateStitchingModule] getResult 0]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "numIterations" "$j" [$iterationSpreadSheet getNumRows 1]
+        set numAssignments 0
+    	for {set iteration 0 } { [expr $iteration] < [$iterationSpreadSheet getNumRows 1]  } {set iteration [expr $iteration + 1] } {
+                set curAssigned  [$iterationSpreadSheet getAValue [$this portEvidenceHeuristic getValue] "Assigned" "Iteration $iteration" ]	
+                echo "curAssigned $curAssigned"
+		echo "query string:"
+		echo "$iterationSpreadSheet getAValue \"CriticalNodes\" \"Assigned\" \"Iteration $iteration\""
+        	set numAssignments [expr $numAssignments + $curAssigned ]
+        }
+	$resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "numEvidence" "$j" $numAssignments
+	$resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "3dDistCutoffAndDummy" "$j" [[$this getVar algorithmRunner] thresholds getValue 0]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "ProjDistCutoffAndDummy" "$j" [[$this getVar algorithmRunner] thresholds getValue 1]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "AngleDistCutoffAndDummy" "$j" [[$this getVar algorithmRunner] thresholds getValue 2]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "PairDummy" "$j" [[$this getVar algorithmRunner] pairDummy getValue 0]
+       
+	$resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "numEvidence" "$j" $numAssignments
+	$resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "3dDistParam" "$j" [[$this getVar algorithmRunner] parameters getValue 0]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "ProjDistParam" "$j" [[$this getVar algorithmRunner] parameters getValue 1]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "AngleDistParam" "$j" [[$this getVar algorithmRunner] parameters getValue 2]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "PairParam" "$j" [[$this getVar algorithmRunner] pgmPairParam getValue 0]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "dummySignificance" "$j" [[$this getVar algorithmRunner] pgmDummieSignificance getValue 0]
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]" "evidenceHeuristic" "$j" [$this portEvidenceHeuristic getValue]
+       
+       
+        
+      
+
+
+    }
+    #$resultSpreadSheet save "CSV" "[ $this portResultFileName getValue ]"
+    $this setResult $resultSpreadSheet
+
+}
+
+$this proc initAllModules {} {
+	remove "FEModule"
+	remove "ComparisonModule"
+  
+    	$this setVar iterateStitchingModule [create HxIteratePointMatchingUntilConvergence ]
+        [$this getVar iterateStitchingModule] data connect [$this portSGStack source]
+	[$this getVar iterateStitchingModule] fire
+	[$this getVar iterateStitchingModule] EvidenceHeuristic setValueString [$this portEvidenceHeuristic getValue]
+	[$this getVar iterateStitchingModule] numIterations setValue 100
+	[$this getVar iterateStitchingModule] fire
+
+	$this setVar algorithmRunner "FEModule"
+
+	$this setVar stitchingGoodnessModule "ComparisonModule"
+	
+        [$this getVar stitchingGoodnessModule] fire
+	[$this getVar stitchingGoodnessModule] MatchingLabelToCompareTo setValueString [$this portMatchingAlgorithmPairs getValue]
+        
+
+        [$this getVar stitchingGoodnessModule] fire
+        [$this getVar algorithmRunner] fire
+	[$this getVar algorithmRunner] algorithmType setValue [$this portMatchingAlgorithm getValue]
+	[$this getVar algorithmRunner] projectionType setValue 0
+	[$this getVar algorithmRunner] parameters setValue 0  [$this portWeights getValue 0]
+	[$this getVar algorithmRunner] parameters setValue 1  [$this portWeights getValue 1]
+	[$this getVar algorithmRunner] parameters setValue 2  [$this portWeights getValue 2]
+	[$this getVar algorithmRunner] useParamsForWeights setValue 0 [$this portUseWeights getValue 0]
+	[$this getVar algorithmRunner] useParamsForWeights setValue 1 [$this portUseWeights getValue 1]
+	[$this getVar algorithmRunner] useParamsForWeights setValue 2 [$this portUseWeights getValue 2]
+	[$this getVar algorithmRunner] pgmPairParam setValue  [$this portWeights getValue 3]
+	[$this getVar algorithmRunner] pgmDummieSignificance setValue  [$this portDummySignificance getValue 0]
+  
+        [$this getVar algorithmRunner] fire
+
+}

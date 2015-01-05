@@ -1,0 +1,125 @@
+# libdai has been imported with the full history that has been rewritten to
+# move all files to a subdirectory.  The latest rewritten upstream commit is
+#
+#     zib-amira:5842343b9401aa2cf9736ad947f64348d5d19af7 Fixed some more
+#     BOOST_CHECK_CLOSE misuse
+#
+# which corresponds to the original upstream commit
+#
+#     libdai:96078cb185aa99a52454fcb7c29503df56f5e3d7 Fixed some more
+#     BOOST_CHECK_CLOSE misuse
+#
+# The upstream repo is at <git://git.tuebingen.mpg.de/libdai.git>.
+#
+# The directory layout has later been changed: the original source in now in a
+# separate directory `upstream/`;  the package root dir contains forwarding
+# headers.
+#
+# Instead of applying individual upstream commits, we should consider importing
+# a specific upstream version all at once.  It might not be obvious, because
+# zib-amira.git contains some local modifications to libdai.
+
+set PACKAGE {dai}
+
+set LIBS {
+    boost
+    hxmatlab
+    mpirxx
+    mpir
+}
+
+set SRC {
+    upstream/src/*.cpp
+}
+
+set INCSRC {
+    *.h
+    upstream/include/dai/*.h
+}
+
+set DEFINES {
+    DAI_WITH_BP
+    DAI_WITH_FBP
+    DAI_WITH_TRWBP
+    DAI_WITH_MF
+    DAI_WITH_HAK
+    DAI_WITH_LC
+    DAI_WITH_TREEEP
+    DAI_WITH_JTREE
+    DAI_WITH_MR
+    DAI_WITH_GIBBS
+    DAI_WITH_CBP
+    DAI_WITH_DECMAP
+}
+
+set DEFINES-Win {
+    WINDOWS
+}
+
+set DEFINES-MacX {
+    MACOSX
+}
+
+set LINKOPTIONS { IGNORE_DUPLICATE_SYMBOLS }
+
+set PREPACKED {
+    mpir_2.2.1-1_base_Win64VC9-Optimize:sha1-d7afa9b06f2fd76f2ccd752e012016e05db7a366
+    mpir_2.2.1-1_base_Win64VC9-Debug:sha1-9a3e7041598283b646dded53baa11ef014a0fb1a
+    mpir_2.2.1-1_base_Win64VC9:sha1-2df5d081611c3ee1a0582d087f16057a6187a169
+
+    mpir_2.2.1-2_base_LinuxAMD64-Optimize:sha1-6adc8d83510c5bc8a6e525a01bfc15ef58ff3927
+    mpir_2.2.1-2_base_LinuxAMD64-Debug:sha1-8226a1993ca9d5a7663eb3734d4c22578c91dfee
+    mpir_2.2.1-2_base_LinuxAMD64:sha1-3de52db85b23ecfec9ff30ff5e3ca1354544a35b
+
+    mpir_2.2.1-1_base_Win64VC10-Optimize:sha1-98fd14e3c29657eb0130ff5e70cde8d7e6072e6f
+    mpir_2.2.1-1_base_Win64VC10-Debug:sha1-3da371978c45fdb17919ed10c92e4742e114d4f2
+    mpir_2.2.1-1_base_Win64VC10:sha1-6f1d7cd9b37d13b71295719cf845d1aa05d6a9f9
+
+    mpir_2.2.1-1_base_MacX-gcc42-Debug:sha1-2f235430b8b12b6b5fe69a84aa8aa918279d2d93
+    mpir_2.2.1-1_base_MacX-gcc42-Optimize:sha1-abc689c4cb7c542121931fa37b04d351c30ddc8d
+    mpir_2.2.1-1_base_MacX-gcc42:sha1-6b7b6cf7fff2133c248ef9678c34de36049bc662
+}
+
+set COPYRIGHT {
+
+Copyright (c) 2006-2011, the libDAI authors.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+MPIR is redistributed under the following license:
+
+Copyright 1991, 1996, 1999, 2000 Free Software Foundation, Inc.
+
+Copyright 2008, 2009 William Hart
+
+The MPIR Library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 2.1 of the License, or (at your
+option) any later version.
+
+The MPIR Library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
+
+}

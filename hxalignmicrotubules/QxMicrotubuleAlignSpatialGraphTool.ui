@@ -1,0 +1,1301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QxMicrotubuleAlignSpatialGraphTool</class>
+ <widget class="QWidget" name="QxMicrotubuleAlignSpatialGraphTool">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>648</width>
+    <height>1092</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_4">
+   <item>
+    <widget class="QGroupBox" name="alignOptionsGroupBox">
+     <property name="title">
+      <string>Align options</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="sortLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Sort by attribute:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="sortComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="manualAlignmentLayout">
+        <item>
+         <layout class="QVBoxLayout" name="manualAlignTableLayout">
+          <item>
+           <widget class="QTableWidget" name="sliceTable">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="manualAlignButtonsLayout">
+          <item>
+           <widget class="QPushButton" name="hideAllButton">
+            <property name="text">
+             <string>Hide all</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="showAllButton">
+            <property name="text">
+             <string>Show all</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="transformButton">
+            <property name="text">
+             <string>Transform</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="globalParametersBox">
+        <property name="title">
+         <string>Global parameters</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QLabel" name="alignLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Align slices:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QRadioButton" name="pairRadioButton">
+             <property name="text">
+              <string>pair-wise</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QRadioButton" name="allRadioButton">
+             <property name="text">
+              <string>all</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="includeLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>115</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Boundary (%):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="includeLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="createMatchingLabelsLabel">
+             <property name="text">
+              <string>Create matching labels:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="createMatchingLabelsCheckBox">
+             <property name="text">
+              <string>Yes</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="useAbsouteValueForEndPointRegionLabel">
+             <property name="text">
+              <string>Use absolute value:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QCheckBox" name="useAbsouteValueForEndPointRegionCheckBox">
+             <property name="text">
+              <string>Use</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="angularMatchingSmoothingLabel">
+             <property name="text">
+              <string>Approx from dist:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QLineEdit" name="angularMatchingSmoothing">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="projectionLabel">
+             <property name="text">
+              <string>Projection:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QComboBox" name="projectionComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="transformLabel">
+             <property name="text">
+              <string>Transform:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QComboBox" name="transformComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+            <item row="4" column="2">
+              <widget class="QLabel" name="angleToPlaneFilterLabel">
+                <property name="text">
+                  <string>Remove angle lower:</string>
+                </property>
+              </widget>
+            </item>
+            <item row="4" column="3">
+              <widget class="QLineEdit" name="angleToPlaneFilter">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                  <size>
+                    <width>50</width>
+                    <height>0</height>
+                  </size>
+                </property>
+                <property name="maximumSize">
+                  <size>
+                    <width>50</width>
+                    <height>16777215</height>
+                  </size>
+                </property>
+              </widget>
+            </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Compute transform:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1" colspan="2">
+            <widget class="QRadioButton" name="radioButtonInitialAlign">
+             <property name="text">
+              <string>Initial</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="3">
+            <widget class="QRadioButton" name="radioButtonOptAlign">
+             <property name="text">
+              <string>Optimum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="4" colspan="2">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>296</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="6" column="0">
+            <widget class="QPushButton" name="alignButton">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Auto-Align</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="initialTransformBox">
+        <property name="title">
+         <string>Initial Transform parameters</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout2">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="0">
+            <widget class="QLabel" name="numPointsForStartTransformLabel">
+             <property name="text">
+              <string>Num points for start transform:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="numPointsForStartTransform">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="dMaxAngleDiffForInitialMatchingLabel">
+             <property name="text">
+              <string>Max angle diff for init matching:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="dMaxAngleDiffForInitialMatching">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="maxPointDistLabel">
+             <property name="text">
+              <string>Max. point dist. for init matching</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="maxPointDistLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="cliqueSizeLabel">
+             <property name="text">
+              <string>Min. clique size:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="cliqueSizeLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="maxCliquesLabel">
+             <property name="text">
+              <string>Max. cliques:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="maxCliquesLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <spacer name="horizontalSpacer1">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="testScalingAndGapParameters">
+        <property name="title">
+         <string>Scaling parameters</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout3">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="0">
+            <widget class="QLabel" name="gapSizeLabel">
+             <property name="text">
+              <string>Gap size:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="GapSizeAutoCheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="dMinLabel">
+             <property name="text">
+              <string>Dmin:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="dMinLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="dMaxLabel">
+             <property name="text">
+              <string>Dmax:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="dMaxLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="deltaHLabel">
+             <property name="text">
+              <string>Delta h:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="deltaHLineEdit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="scaleTestIncrement">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="scaleTestMin">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="scaleTestLabelMin">
+             <property name="text">
+              <string>Test scale min:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="scaleTestLabelIncrement">
+             <property name="text">
+              <string>Test scale increment:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QLineEdit" name="scaleTestMax">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="scaleTestLabelMax">
+             <property name="text">
+              <string>Test scale max:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+       <item>
+         <widget class="QGroupBox" name="nlTransformParameters">
+           <property name="title">
+             <string>CPD transform</string>
+           </property>
+           <layout class="QVBoxLayout" name="cpdVerticalLayout">
+             <item>
+               <layout class="QGridLayout" name="cpdGridLayout">
+                 <item row="0" column="0">
+                   <widget class="QLabel" name="cpdTypeLabel">
+                     <property name="text">
+                       <string>Transform Type:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="0" column="1">
+                   <widget class="QComboBox" name="CPDTypeComboBox">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                       <size>
+                         <width>50</width>
+                         <height>0</height>
+                       </size>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>100</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="0">
+                   <widget class="QLabel" name="cpdScalingLabel">
+                     <property name="text">
+                       <string>With scaling:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="1">
+                   <widget class="QCheckBox" name="cpdUseScalingButton">
+                     <property name="text">
+                       <string></string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="2">
+                   <widget class="QLabel" name="cpdDirectionLabel">
+                     <property name="text">
+                       <string>With orientation:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="3">
+                   <widget class="QCheckBox" name="cpdUseDirectionButton">
+                     <property name="text">
+                       <string></string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="2" column="0">
+                   <widget class="QLabel" name="cpdWithCoordLabel">
+                     <property name="text">
+                       <string>With coord(only affects rigid cpd):</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="2" column="1">
+                   <widget class="QCheckBox" name="cpdWithCoordButton">
+                     <property name="text">
+                       <string></string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="0">
+                   <widget class="QLabel" name="cpdBetaLabel">
+                     <property name="text">
+                       <string>Beta:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="1">
+                   <widget class="QLineEdit" name="cpdBetaLineEdit">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                       <size>
+                         <width>50</width>
+                         <height>0</height>
+                       </size>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>50</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="2">
+                   <widget class="QLabel" name="cpdLambdaLabel">
+                     <property name="text">
+                       <string>Lambda:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="3">
+                   <widget class="QLineEdit" name="cpdLambdaLineEdit">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                       <size>
+                         <width>50</width>
+                         <height>0</height>
+                       </size>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>50</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="4" column="0">
+                   <widget class="QLabel" name="cpdWLabel">
+                     <property name="text">
+                       <string>w:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="4" column="1">
+                   <widget class="QLineEdit" name="cpdWLineEdit">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>50</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="4" column="2">
+                   <widget class="QLabel" name="cpdLandmarkSampleLabel">
+                     <property name="text">
+                       <string>landmark sample dist:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="4" column="3">
+                   <widget class="QLineEdit" name="cpdLandmarkSampleDist">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>50</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="5" column="0">
+                   <widget class="QLabel" name="mlsAlphaLabel">
+                     <property name="text">
+                       <string>alpha for mls:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="5" column="1">
+                   <widget class="QLineEdit" name="mlsAlpha">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>50</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="5" column="2">
+                   <widget class="QLabel" name="cpdMaxSigmaSquareLabel">
+                     <property name="text">
+                       <string>Max sigmaSquare:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="5" column="3">
+                   <widget class="QLineEdit" name="cpdMaxSigmaSquare">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                       <size>
+                         <width>50</width>
+                         <height>16777215</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="6" column="0">
+                   <widget class="QPushButton" name="applyCPD">
+                     <property name="text">
+                       <string>Deform</string>
+                     </property>
+                   </widget>
+                 </item>
+               </layout>
+             </item>
+           </layout>
+         </widget>
+       </item>
+      <item>
+       <widget class="QGroupBox" name="optTransformBox">
+        <property name="title">
+         <string>Optimization Transform parameters</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout10">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="2" column="0">
+            <widget class="QLabel" name="pmAlgoTypeLabel">
+             <property name="text">
+              <string>PM algorithm:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QComboBox" name="pmAlgorithmComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+            
+           <item row="12" column="0">
+            <widget class="QLabel" name="useThresholdParams">
+             <property name="text">
+              <string>Use Threshold Parameters:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="12" column="1">
+            <widget class="QCheckBox" name="use3dDistanceThres">
+             <property name="text">
+              <string>3d distance</string>
+             </property>
+            </widget>
+           </item>
+            <item row="12" column="2">
+              <widget class="QCheckBox" name="useProjectedDistanceThres">
+                <property name="text">
+                  <string>projected distance</string>
+                </property>
+              </widget>
+            </item>
+            <item row="12" column="3">
+              <widget class="QCheckBox" name="useAngleThres">
+                <property name="text">
+                  <string>angleDiff</string>
+                </property>
+              </widget>
+            </item>
+            <item row="13" column="0">
+              <widget class="QLabel" name="valuesThresholdParams">
+                <property name="text">
+                  <string>Values:</string>
+                </property>
+              </widget>
+            </item>
+            <item row="13" column="1">
+              <widget class="QLineEdit" name="threeDDistanceThres">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+            <item row="13" column="2">
+              <widget class="QLineEdit" name="projectedDistanceThres">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+            <item row="13" column="3">
+              <widget class="QLineEdit" name="angleThres">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+
+
+            <item row="14" column="0">
+              <widget class="QLabel" name="weightsLabel">
+                <property name="text">
+                  <string>Use Weights:</string>
+                </property>
+              </widget>
+            </item>
+            <item row="14" column="1">
+              <widget class="QCheckBox" name="use3dDistanceWeight">
+                <property name="text">
+                  <string>3d distance</string>
+                </property>
+              </widget>
+            </item>
+            <item row="14" column="2">
+              <widget class="QCheckBox" name="useProjectedDistanceWeight">
+                <property name="text">
+                  <string>projected distance</string>
+                </property>
+              </widget>
+            </item>
+            <item row="14" column="3">
+              <widget class="QCheckBox" name="useAngleWeight">
+                <property name="text">
+                  <string>angleDiff</string>
+                </property>
+              </widget>
+            </item>
+            <item row="15" column="0">
+              <widget class="QLabel" name="valuesWeightParams">
+                <property name="text">
+                  <string>Values:</string>
+                </property>
+              </widget>
+            </item>
+            <item row="15" column="1">
+              <widget class="QLineEdit" name="threeDDistanceWeight">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+            <item row="15" column="2">
+              <widget class="QLineEdit" name="projectedDistanceWeight">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+            <item row="15" column="3">
+              <widget class="QLineEdit" name="angleWeight">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+
+
+            <item row="16" column="0">
+              <widget class="QLabel" name="weightTypeLabel">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>Weight type:</string>
+                </property>
+              </widget>
+            </item>
+            <item row="16" column="1">
+              <widget class="QRadioButton" name="linareWeightButton">
+                <property name="text">
+                  <string>linear</string>
+                </property>
+              </widget>
+            </item>
+            <item row="16" column="2">
+              <widget class="QRadioButton" name="exponentialWeightButton">
+                <property name="text">
+                  <string>exponential</string>
+                </property>
+              </widget>
+            </item>
+
+            <item row="17" column="0">
+              <widget class="QLabel" name="pairFactorParamLabel">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>Weight for pair params(PGM only):</string>
+                </property>
+              </widget>
+            </item>
+            <item row="17" column="1">
+              <widget class="QLineEdit" name="pairFactorParam">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+
+
+            <item row="18" column="0">
+              <widget class="QLabel" name="pgmDummyLabel">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>Dummy significance(PGM only):</string>
+                </property>
+              </widget>
+            </item>
+            <item row="18" column="1">
+              <widget class="QLineEdit" name="dummySignificance">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+              </widget>
+            </item>
+           <item row="21" column="2">
+            <spacer name="horizontalSpacer2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      
+       <item>
+         <layout class="QVBoxLayout" name="finalizeLayout">
+           <item row="0" column="1">
+             <widget class="QComboBox" name="wNodeColoringComboBox">
+               <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                 </sizepolicy>
+               </property>
+             </widget>
+           </item>
+           <item>
+             <widget class="QPushButton" name="joinButton">
+               <property name="text">
+                 <string>Join ends</string>
+               </property>
+             </widget>
+           </item>
+           <item>
+             <widget class="QPushButton" name="finalButton">
+               <property name="text">
+                 <string>Final</string>
+               </property>
+             </widget>
+           </item>
+         </layout>
+        </item>
+      </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,37 @@
+\begin{hxmodule2}{WarpTomogramWithMLS}{Warp a tomogram using Moving Least Squares}
+
+\hxlabel{HxMovingLeastSquaresTomogramWarp}
+\hxpackname{amira}
+
+\begin{hxdescription}
+
+Transforms image data to match the transformation that was used when aligning a
+spatial graph with the MicrotubuleAlignTool.  The algorithm is described in
+Schaefer, S., McPhail, T., and Warren, J.~D. (2006).  Image deformation using
+moving least squares.  {\em ACM Trans. Graph.}, 25(3):533--540.
+
+\end{hxdescription}
+
+\begin{hxconnections}
+\hxlabel{HxMovingLeastSquaresTomogramWarp_data}
+\hxport{Data}{\tt [required]}\\
+A SpatialGraph that has been aligned with the MicrotubuleAlignTool.
+
+\hxlabel{HxMovingLeastSquaresTomogramWarp_tomogram}
+\hxport{Tomogram}{\tt [optional]}\\
+The image data (tomogram, correlation field, or integer-encoded orientation
+field) to be warped.
+
+\end{hxconnections}
+
+\begin{hxports}
+
+\hxlabel{HxMovingLeastSquaresTomogramWarp_transform}
+\hxport{Transform}\\
+\hximage{HxMovingLeastSquaresTomogramWarp_transform}\\
+The transformation to be applied.  Select the slices that corresponds to the
+connected image data.
+
+\end{hxports}
+
+\end{hxmodule2}

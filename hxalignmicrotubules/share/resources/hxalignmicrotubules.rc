@@ -1,0 +1,84 @@
+
+# ----------------------------------------------------------------------------
+#   Filament editor Plug-in mechanism 
+# ----------------------------------------------------------------------------
+if { [info exists hxneuroneditorplugins] == 0} {
+    set hxneuroneditorplugins [list];
+}
+
+lappend hxneuroneditorplugins {AlignMicrotubulesTool QxMicrotubuleAlignSpatialGraphTool_init_plugin hxalignmicrotubules}
+
+
+module -name "IteratePointMatchingUntilConvergence" \
+    -primary "HxSpatialGraph" \
+    -class "HxIteratePointMatchingUntilConvergence" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+module -name "TestPointMatching" \
+    -primary "HxSpatialGraph" \
+    -class "HxTestPointMatching" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+module -name "MeasureStitchingGoodness" \
+    -primary "HxSpatialGraph" \
+    -class "HxComparePointMatchings" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+module -name "WarpSliceWithMLS" \
+    -primary "HxSpatialGraph" \
+    -class "HxMovingLeastSquaresSpatialGraphWarp" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+module -name "WarpTomogramWithMLS" \
+    -primary "HxSpatialGraph" \
+    -class "HxMovingLeastSquaresTomogramWarp" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+    
+module -name "MovingLeastSquaresWarp" \
+    -primary "HxLandmarkSet" \
+    -class "HxMovingLeastSquaresWarp" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+
+module -name "WriteMatchingProperties" \
+    -primary "HxSpatialGraph" \
+    -class "WriteMatchingProperties2" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+
+module -name "CPDWarp" \
+    -primary "HxSpatialGraph" \
+    -class "HxCPDSpatialGraphWarp" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+
+module -name "HxRotateSpatialGraphStackSliceAndCDP" \
+    -primary "HxSpatialGraph" \
+    -class "HxRotateSpatialGraphStackSliceAndCDP" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+
+module -name "VaryStitchingParametersAndIterate" \
+    -package "hxelectrontomography" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so" \
+    -proc {
+    set mod [[create HxScriptObject] setLabel "TryStitchingParametersAndIterate"]
+    $mod script setValue $AMIRA_ROOT/share/script-objects/TryStitchingParametersAndIterate.scro
+    $mod fire
+    }
+
+module -name "HxCopyLabelsFromSpatialGraph" \
+    -primary "HxSpatialGraph" \
+    -class "HxCopyLabelsFromSpatialGraph" \
+    -category "ElTomo" \
+    -dso "libhxalignmicrotubules.so"
+

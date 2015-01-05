@@ -1,0 +1,108 @@
+# Amira-Script-Object V3.0
+
+$this proc constructor {} {
+
+    global AMIRA_ROOT
+ 
+    $this newPortDoIt  runButton 
+    $this runButton setLabel "Run"
+    
+    $this newPortConnection portSGStack HxSpatialGraph
+    
+
+    $this newPortText portResultFileName
+   
+    $this setVar stitchingGoodnessModule [create HxComparePointMatchings ]
+    [$this getVar stitchingGoodnessModule] fire
+    
+    $this setVar algorithmRunner [create HxTestPointMatching ]
+    [$this getVar algorithmRunner] fire
+    
+     $this newPortText portVariyingParameter
+     
+    $this newPortIntTextN portVariyingParameterIdx 1
+    $this portVariyingParameterIdx setValue 0
+   
+    $this newPortFloatTextN portStepSize 1
+    $this portStepSize setValue 100
+
+    $this newPortFloatTextN portMinVal 1
+    $this portMinVal setValue 0
+
+    $this newPortFloatTextN portMaxVal 1
+    $this portMaxVal setValue 1000
+     
+}
+
+$this proc destructor {} {}
+
+$this proc update {} {
+
+ if { [$this portSGStack isNew] } {
+
+        [$this getVar algorithmRunner] data connect [$this portSGStack source]
+		[$this getVar stitchingGoodnessModule] data connect [$this portSGStack source]
+    }
+
+}
+
+
+$this proc compute {} {
+
+   global AMIRA_ROOT
+
+    if { ![$this runButton wasHit] } {
+
+        return 
+    }
+
+   
+    set resultSpreadSheet [create SpreadSheetWrapper]
+   
+    
+    
+    
+    # for-schleife um verschiedene thresholds
+    for {set j [expr [$this portMinVal getValue]] } { [expr $j] < [ expr [$this portMaxVal getValue] ]  } {set j [expr $j + [$this portStepSize getValue] ]} {
+               
+               
+        [$this getVar algorithmRunner] [$this  portVariyingParameter getValue] setValue [$this portVariyingParameterIdx getValue] $j
+        [$this getVar algorithmRunner] apply hit
+        [$this getVar algorithmRunner] fire
+        
+        set curAlgorithm  [ [$this getVar algorithmRunner] algorithmType getValue 0]
+        if { $curAlgorithm == 0 } {
+			 [$this getVar stitchingGoodnessModule] MatchingLabelToCompareTo setValueString "GreedyAssignedPairs"
+        }
+        if { $curAlgorithm == 1 } {
+			[$this getVar stitchingGoodnessModule] MatchingLabelToCompareTo setValueString "ExactAssignedPairs"
+        }
+        if { $curAlgorithm == 2 } {
+			 [$this getVar stitchingGoodnessModule] MatchingLabelToCompareTo setValueString "PGMAssignedPairs"
+        }
+        [$this getVar stitchingGoodnessModule] fire
+        
+        [$this getVar stitchingGoodnessModule] apply hit
+        [$this getVar stitchingGoodnessModule] fire
+        
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "falsePositivePairs" "$j" "[[$this getVar stitchingGoodnessModule] falsePositivePairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "falseNegativePairs" "$j" "[[$this getVar stitchingGoodnessModule] falseNegativePairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "disagreementPairs" "$j" "[[$this getVar stitchingGoodnessModule] disagreementPairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "correctPairs" "$j" "[[$this getVar stitchingGoodnessModule] correctPairs getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "treeNodes" "$j" "[[$this getVar stitchingGoodnessModule] treeNodes getValue]"
+        $resultSpreadSheet setAValue "Vary[$this  portVariyingParameter getValue]"  "criticalNodes" "$j" "[[$this getVar stitchingGoodnessModule] criticalNodes getValue]"
+        
+        remove [ [$this getVar stitchingGoodnessModule] getResult]
+        
+      
+
+
+    }
+    #$resultSpreadSheet save "CSV" "[ $this portResultFileName getValue ]"
+    $this setResult $resultSpreadSheet
+
+}
+
+
+
+

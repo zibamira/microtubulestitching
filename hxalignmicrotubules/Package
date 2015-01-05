@@ -1,0 +1,100 @@
+set LABELS {spatialgraph}
+
+set LIBS {
+    pointmatching
+    hxspatialgraph
+    hxneuroneditor
+    hxcore
+    amiramesh
+    mclib
+    qt
+    oiv
+    tcl
+    opengl
+    hxfield
+    hxlines
+    dai
+    hxtemplatematchingutil
+    hxlandmark
+    mcla
+    openmp
+    ipopt
+    mpirxx
+    mpir
+}
+
+# The tests use testing data from hxalignspatialgraph.
+set DEPENDS {
+    hxalignspatialgraph
+}
+
+# `WINDOWS` is required for libdai
+set DEFINES-Win {
+    WINDOWS
+    HAVE_CONFIG_H
+}
+
+# Required for libdai
+set DEFINES-MacX {
+    MACOSX
+}
+
+set SRC {
+    *.cpp
+    mtalign/*.cpp
+}
+
+set INCSRC {
+    *.h
+    mtalign/*.h
+}
+
+# Exclude attic if old init style is used, because init.cpp does not work with
+# subdirs.
+if { [getOption "autoinitstyle"] != "class-member" } {
+  append SRC {
+    attic/*.cpp
+  }
+  append INCSRC {
+    attic/*.h
+  }
+}
+
+set SHARE {
+    share/script-objects/*.scro
+    share/resources/hxalignmicrotubules.rc
+}
+
+if { [passLabelFilter apiAmiraGreater5] } {
+  append LIBS {
+    hxspreadsheet
+  }
+} else {
+  append LIBS {
+    hxstatistics
+  }
+
+  set DEFINES {
+    HX_AMIRA5_COMPAT
+  }
+}
+
+
+set TESTLIBS {
+    gtest
+    hxgtest
+}
+
+set TESTSRC {
+    *Test.cpp
+    hxtesting.cpp
+    mtalign/*Test.cpp
+}
+
+set TESTINCSRC {
+    hxtesting.h
+}
+
+set TESTSHARE {
+    share/resources/test_hxalignmicrotubules.rc
+}
