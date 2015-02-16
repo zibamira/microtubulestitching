@@ -37,17 +37,12 @@ static ma::EndPointParams makeParams() {
     // From GUI 'Use absolute value'.
     params.useAbsouteValueForEndPointRegion = false;
 
-    // From GUI 'Projection' (String).
-    params.projectionType = "Orthogonal";
+    // From GUI 'Projection' (String) mapped to enum.
+    params.projectionType = ma::P_ORTHOGONAL;
 
     // From default value in ctor
     // MicrotubuleSpatialGraphAligner::mNumMaxPointsForInitialTransform.
     params.numMaxPointsForInitTransform = 50;
-
-    // From GUI 'Transform' (String), mapped through
-    // MicrotubuleSpatialGraphAligner::TransformTypes to determine index.
-    // 0 is 'Rigid'.
-    params.transformType = 0;
 
     // From GUI 'Approx. from dist'.
     params.maxDistForAngle = 2000;
@@ -80,13 +75,14 @@ std::ostream& operator<<(std::ostream& os, const Expectation& e) {
         os << "'" << e.filename << "'";
         os << ", ";
         os << "projectionType: ";
-        os << "'" << e.params.projectionType.getString() << "'";
+        os << "'" << e.params.projectionType << "'";
     }
     os << " }";
     return os;
 }
 
-class WithParam : public ::testing::TestWithParam<Expectation> {};
+class mtalign__projectTestWithTestingData
+    : public ::testing::TestWithParam<Expectation> {};
 
 }  // namespace
 
@@ -98,7 +94,7 @@ static void expectSha1(const McDArray<McVec3f>& arr, const char* sha1) {
     EXPECT_THAT(&arr[0][0], ht::EqArray3Sha1<float>(dims, sha1));
 }
 
-TEST_P(WithParam, shouldComputeBaseline) {
+TEST_P(mtalign__projectTestWithTestingData, computesBaseline) {
     TestingDevNullRedirect silentout(stdout);
     TestingDevNullRedirect silenterr(stderr);
     Expectation e = GetParam();
@@ -134,47 +130,47 @@ std::vector<Expectation> makeExpectations() {
     e.sha1s.refDirections = "8a389ff07b282284a0c19e7965b8f6e213500406";
     e.sha1s.transDirections = "13f6cfb19dbf1fb4349d086ef7b60f93c4f74fed";
 
-    e.params.projectionType = "Orthogonal";
+    e.params.projectionType = ma::P_ORTHOGONAL;
     e.sha1s.refCoords = "d6cefb5238517d697c9b706e441d0ea57e7845e8";
     e.sha1s.transCoords = "6d86d7bd4242efec27dd54fd14780829ecfb65d1";
     es.push_back(e);
 
-    e.params.projectionType = "Linear";
+    e.params.projectionType = ma::P_LINEAR;
     e.sha1s.refCoords = "62b6c83c7021c3f8a8be5947ff5cd08eac98c2b8";
     e.sha1s.transCoords = "1574467e28a5f70dec5d62e884315d55c6abbc06";
     es.push_back(e);
 
-    e.params.projectionType = "Tangent";
+    e.params.projectionType = ma::P_TANGENT;
     e.sha1s.refCoords = "d2acb46cf4194afc59d1d922017b5342b053cadb";
     e.sha1s.transCoords = "ab9482357449e87e08a10e26d210b5deb4e43818";
     es.push_back(e);
 
-    e.params.projectionType = "Fit degree 0";
+    e.params.projectionType = ma::P_FIT_0;
     e.sha1s.refCoords = "b24d8efd2cf3164af8728938ed78a38fa11a2755";
     e.sha1s.transCoords = "a5dca2b414c42b18c2b7f0a9606712200dfb56ea";
     es.push_back(e);
 
-    e.params.projectionType = "Fit degree 1";
+    e.params.projectionType = ma::P_FIT_1;
     e.sha1s.refCoords = "ff4b65c6d9379b05600b0396e27405f384e4569f";
     e.sha1s.transCoords = "38112540bb3091920036f3ebc4167fe8a5d50f39";
     es.push_back(e);
 
-    e.params.projectionType = "Fit degree 2";
+    e.params.projectionType = ma::P_FIT_2;
     e.sha1s.refCoords = "26ba469999f374b1f2aecfd2467581a6588a6d14";
     e.sha1s.transCoords = "52294db34ed5bdb1064fee3c2b50b2e3fbc09949";
     es.push_back(e);
 
-    e.params.projectionType = "Fit degree 3";
+    e.params.projectionType = ma::P_FIT_3;
     e.sha1s.refCoords = "6f3257701b9decb0cfea6b52c8117d951cbd24c9";
     e.sha1s.transCoords = "5542eabaabc7b5036c7b2ba9f03d33b837bca13b";
     es.push_back(e);
 
-    e.params.projectionType = "ApproxTangent theshold";
+    e.params.projectionType = ma::P_APPROX_TANGENT;
     e.sha1s.refCoords = "cd1444df24586eb2cd4961bf37ee329d860adaf6";
     e.sha1s.transCoords = "63ca608cdabb8251f338d9175912e8a9715d3432";
     es.push_back(e);
 
-    e.params.projectionType = "None";
+    e.params.projectionType = ma::P_NONE;
     e.sha1s.refCoords = "5dd43e06d3f8a1f9867adbd78a284ca9c4536232";
     e.sha1s.transCoords = "917830282e6220634018236d2f88ed918094dd9f";
     es.push_back(e);
@@ -183,5 +179,6 @@ std::vector<Expectation> makeExpectations() {
 }
 
 // Limit tests to Linux, because the sha1 comparison fails on Windows.
-INSTANTIATE_TEST_CASE_P_LINUX(PointRepresentationCreatorForMicrotubules,
-                              WithParam, testing::ValuesIn(makeExpectations()));
+INSTANTIATE_TEST_CASE_P_LINUX(WithBaselineForAllProjectionTypes,
+                              mtalign__projectTestWithTestingData,
+                              testing::ValuesIn(makeExpectations()));

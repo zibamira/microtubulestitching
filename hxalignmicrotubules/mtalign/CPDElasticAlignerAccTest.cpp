@@ -1,4 +1,4 @@
-#include <hxalignmicrotubules/CoherentPointDriftNLFisherMises.h>
+#include <hxalignmicrotubules/mtalign/CPDElasticAligner.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -9,6 +9,7 @@
 
 #include <hxalignmicrotubules/MicrotubuleSpatialGraphAligner.h>
 #include <hxalignmicrotubules/mtalign.h>
+#include <hxalignmicrotubules/MovingLeastSquares.h>
 
 #if defined(HX_OS_LINUX)
 #define TEST_LINUX(test_case_name, test_name) TEST(test_case_name, test_name)
@@ -35,16 +36,11 @@ static ma::EndPointParams makeEndPointParams(int refSliceNum, int transSliceNum,
     params.useAbsouteValueForEndPointRegion = false;
 
     // From GUI 'Projection' (String).
-    params.projectionType = "Orthogonal";
+    params.projectionType = ma::P_ORTHOGONAL;
 
     // From default value in ctor
     // MicrotubuleSpatialGraphAligner::mNumMaxPointsForInitialTransform.
     params.numMaxPointsForInitTransform = 50;
-
-    // From GUI 'Transform' (String), mapped through
-    // MicrotubuleSpatialGraphAligner::TransformTypes to determine index.
-    // 0 is 'Rigid'.
-    params.transformType = 0;
 
     // From GUI 'Approx. from dist'.
     params.maxDistForAngle = 2000;
@@ -61,7 +57,7 @@ static void dontPrint(const char* msg) {
 }
 
 // Restrict test to Linux, because sha1 on Windows differs.
-TEST_LINUX(CoherentPointDriftNLFisherMises, shouldComputeKnownResult_E5MS) {
+TEST_LINUX(mtalign__CPDElasticAlignerAccTest, shouldComputeKnownResult_E5MS) {
     TestingObjectPoolCleaner cleaner;
     TestingData sgdat("spatialgraph/fullp0p1.am");
     ASSERT_TRUE(sgdat.dataOk<HxSpatialGraph>());
@@ -78,7 +74,7 @@ TEST_LINUX(CoherentPointDriftNLFisherMises, shouldComputeKnownResult_E5MS) {
     ma::FacingPointSets opt = ma::projectEndPoints(sg, params);
 
     // Configure cpd params.
-    CoherentPointDriftNLFisherMises cpd;
+    mtalign::CPDElasticAligner cpd;
     cpd.setPrint(dontPrint);
     cpd.params.beta = 10;
     cpd.params.lambda = 1;
@@ -89,50 +85,15 @@ TEST_LINUX(CoherentPointDriftNLFisherMises, shouldComputeKnownResult_E5MS) {
     cpd.params.useDirections = 1;
     const float alpha = 2;
 
-    // Set fixed points.
-    McDArray<McVec3f> directions = opt.ref.directions;
-    McDArray<McVec3f> coords = opt.ref.positions;
-    if (cpd.params.useDirections) {
-        for (int i = 0; i < directions.size(); i++) {
-            directions[i].normalize();
-        }
-    } else {
-        directions.fill(McVec3f(0.0, 0.0, 1.0));
+    for (int i = 0; i < opt.trans.directions.size(); i++) {
+        // Keep `normalize()`, because removing it changes sha1.
+        opt.trans.directions[i].normalize();
+        opt.trans.directions[i] *= -1;
     }
-    cpd.convertCoordsToMatrix(coords, cpd.xs);
-    cpd.convertDirectionsToMatrix(directions, cpd.xDirs);
+    cpd.setPoints(opt);
 
-    // Set moving points.
-    directions = opt.trans.directions;
-    coords = opt.trans.positions;
-    if (cpd.params.useDirections) {
-        for (int i = 0; i < directions.size(); i++) {
-            directions[i].normalize();
-            directions[i] *= -1;
-        }
-    } else {
-        directions.fill(McVec3f(0.0, 0.0, 1.0));
-    }
-    cpd.convertCoordsToMatrix(coords, cpd.ys);
-    cpd.convertDirectionsToMatrix(directions, cpd.yDirs);
-
-    // Solve.
-    McDMatrix<double> G;
-    McDMatrix<double> W;
-    McDArray<McVec2i> correspondences;
-    const mtalign::AlignInfo info = cpd.align(G, W, correspondences);
-    McDMatrix<double> transCoordsShiftedM;
-    cpd.shiftYs(cpd.ys, G, W, transCoordsShiftedM);
-    cpd.rescaleYs(transCoordsShiftedM);
-
-    // Get result.
-    McDArray<McVec3f> origCoords = opt.trans.positions;
-    const McDArray<McVec3f> transCoordsOld = opt.trans.positions;
-    McDArray<McVec3f> transCoords;
-    cpd.convertMatrixToCoords(transCoords, transCoordsShiftedM);
-    for (int i = 0; i < transCoords.size(); i++) {
-        transCoords[i].z = transCoordsOld[i].z;
-    }
+    ma::AlignInfo info;
+    const McDArray<McVec3f> transCoords = cpd.align(info);
 
     EXPECT_THAT(info.eDiffRel, gt::Lt(1e-5));
     EXPECT_THAT(info.sigmaSquare, gt::Lt(0.001));
@@ -142,6 +103,7 @@ TEST_LINUX(CoherentPointDriftNLFisherMises, shouldComputeKnownResult_E5MS) {
     EXPECT_THAT(info.e, gt::Lt(1492.2));
     EXPECT_EQ(45, info.numIterations);
 
+    const McDArray<McVec3f> origCoords = opt.trans.positions;
     MovingLeastSquares mls;
     mls.setAlpha(alpha);
     mls.setLandmarks(origCoords, transCoords);

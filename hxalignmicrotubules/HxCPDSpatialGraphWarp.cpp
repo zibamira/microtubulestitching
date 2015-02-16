@@ -22,8 +22,8 @@
 #include <hxwarp/HxPolygonWarp.h>
 #include <mclib/McWatch.h>
 
-#include <hxalignmicrotubules/CoherentPointDriftNLFisherMises.h>
-#include <hxalignmicrotubules/CoherentPointDriftRigidFisherMises.h>
+#include <hxalignmicrotubules/mtalign/CPDElasticAligner.h>
+#include <hxalignmicrotubules/mtalign/CPDLinearAligner.h>
 #include <hxalignmicrotubules/MovingLeastSquares.h>
 #include <hxalignmicrotubules/mtalign.h>
 
@@ -154,11 +154,10 @@ void HxCPDSpatialGraphWarp::preparePoints(McDArray<McVec3f>& p1,
     ma::EndPointParams params;
     params.endPointRegion = 30;
     params.projectionPlane = selectionHelper.computeMidPlane(0, 1);
-    params.projectionType = McString("Orthogonal");
+    params.projectionType = ma::P_ORTHOGONAL;
     params.refSliceNum = 0;
     params.transSliceNum = 1;
     params.useAbsouteValueForEndPointRegion = false;
-    params.transformType = 2;
     params.maxDistForAngle = 2000;
     params.angleToPlaneFilter = 0.01;
     SpatialGraphSelection slice1;
@@ -192,11 +191,10 @@ void HxCPDSpatialGraphWarp::preparePointsAndDirections(
     ma::EndPointParams params;
     params.endPointRegion = 30;
     params.projectionPlane = selectionHelper.computeMidPlane(0, 1);
-    params.projectionType = McString("Orthogonal");
+    params.projectionType = ma::P_ORTHOGONAL;
     params.refSliceNum = 0;
     params.transSliceNum = 1;
     params.useAbsouteValueForEndPointRegion = false;
-    params.transformType = 2;
     params.maxDistForAngle = 2000;
     params.angleToPlaneFilter = 0.01;
     SpatialGraphSelection slice1;
@@ -236,11 +234,10 @@ void HxCPDSpatialGraphWarp::preparePointsAndDirectionsRigid(
     ma::EndPointParams params;
     params.endPointRegion = 30;
     params.projectionPlane = selectionHelper.computeMidPlane(0, 1);
-    params.projectionType = McString("Orthogonal");
+    params.projectionType = ma::P_ORTHOGONAL;
     params.refSliceNum = 0;
     params.transSliceNum = 1;
     params.useAbsouteValueForEndPointRegion = false;
-    params.transformType = 2;
     params.maxDistForAngle = 2000;
     params.angleToPlaneFilter = 0.01;
     SpatialGraphSelection slice1;
@@ -300,7 +297,7 @@ void HxCPDSpatialGraphWarp::computeRigidVanMises() {
     preparePointsAndDirectionsRigid(points1, points2, dirs1, dirs2, slice2,
                                     resultSG);
     mcassert(slice2.getNumSelectedVertices() == points2.size());
-    CoherentPointDriftRigidFisherMises cpd;
+    ma::CPDLinearAligner cpd;
     cpd.params.w = portW.getValue();
     cpd.params.withScaling = portWithScale.getValue();
     cpd.params.maxIterations = portEMParams.getValue(0);
@@ -314,21 +311,21 @@ void HxCPDSpatialGraphWarp::computeRigidVanMises() {
         dirs2.fill(McVec3f(0, 0, 1));
     }
 
-    cpd.convertMcDArraysToMatrix(points1, dirs1, cpd.Xc, cpd.Xd);
-    std::cout << "num X " << points1.size() << ", num Y " << points2.size();
-    cpd.convertMcDArraysToMatrix(points2, dirs2, cpd.Yc, cpd.Yd);
+    ma::FacingPointSets points;
+    points.ref.positions = points1;
+    points.ref.directions = dirs1;
+    points.trans.positions = points2;
+    points.trans.directions = dirs2;
+    cpd.setPoints(points);
 
     McDMatrix<double> Rc, Rd;
     McDVector<double> t;
     double s;
-    McDArray<McVec2i> correspondences;
-    double kappa, sigmaSquare;
-    const mtalign::AlignInfo info =
-        cpd.align(Rc, s, t, Rd, correspondences, sigmaSquare, kappa);
+    const mtalign::AlignInfo info = cpd.align(Rc, s, t, Rd);
 
     applyRigidDeformationToSliceVanMises(slice2, resultSG, cpd, Rc, s, t);
-    portCPDResults.setValue(0, sigmaSquare);
-    portCPDResults.setValue(1, kappa);
+    portCPDResults.setValue(0, info.sigmaSquare);
+    portCPDResults.setValue(1, info.kappa);
     portCPDResults.setValue(2, s);
     double rho = mtalign::rotationAngle2d(Rc);
 
@@ -343,8 +340,8 @@ void HxCPDSpatialGraphWarp::computeRigidVanMises() {
 
 void HxCPDSpatialGraphWarp::applyRigidDeformationToSliceVanMises(
     SpatialGraphSelection& slice, HxSpatialGraph* spatialGraph,
-    const CoherentPointDriftRigidFisherMises& deformation,
-    const McDMatrix<double>& R, const double s, const McDVector<double>& t) {
+    const ma::CPDLinearAligner& deformation, const McDMatrix<double>& R,
+    const double s, const McDVector<double>& t) {
 
     McWatch watch;
     watch.start();
@@ -360,8 +357,8 @@ void HxCPDSpatialGraphWarp::applyRigidDeformationToSliceVanMises(
         for (int j = 0; j < spatialGraph->getNumEdgePoints(edge); j++) {
 
             McVec3f edgePoint = spatialGraph->getEdgePoint(edge, j);
-            McVec3f edgePointWarped;
-            deformation.warpPoint(edgePoint, R, s, t, edgePointWarped);
+            const McVec3f edgePointWarped =
+                deformation.warpPoint(edgePoint, R, s, t);
             newEdgePoints.append(edgePointWarped);
         }
         spatialGraph->setEdgePoints(edge, newEdgePoints);
@@ -370,8 +367,7 @@ void HxCPDSpatialGraphWarp::applyRigidDeformationToSliceVanMises(
     for (int i = 0; i < fullSliceSelection.getNumSelectedVertices(); i++) {
         int curVertex = fullSliceSelection.getSelectedVertex(i);
         McVec3f curCoord = spatialGraph->getVertexCoords(curVertex);
-        McVec3f curCoordWarped;
-        deformation.warpPoint(curCoord, R, s, t, curCoordWarped);
+        const McVec3f curCoordWarped = deformation.warpPoint(curCoord, R, s, t);
         spatialGraph->setVertexCoords(curVertex, curCoordWarped);
     }
 
@@ -385,14 +381,14 @@ void HxCPDSpatialGraphWarp::computeNL() {
 
     HxSpatialGraph* resultSG = createOutputDataSet();
     resultSG->copyFrom(inputSG);
-    McDArray<McVec3f> points1, points2;
-    McDArray<McVec3f> dirs1, dirs2;
+    ma::FacingPointSets points;
     SpatialGraphSelection slice2;
-    preparePointsAndDirectionsRigid(points1, points2, dirs1, dirs2, slice2,
-                                    resultSG);
-    mcassert(slice2.getNumSelectedVertices() == points2.size());
-    CoherentPointDriftNLFisherMises cpd;
+    preparePointsAndDirectionsRigid(
+        points.ref.positions, points.trans.positions, points.ref.directions,
+        points.trans.directions, slice2, resultSG);
+    mcassert(slice2.getNumSelectedVertices() == points.trans.positions.size());
 
+    mtalign::CPDElasticAligner cpd;
     cpd.params.beta = portBeta.getValue();
     cpd.params.lambda = portLambda.getValue();
     cpd.params.w = portW.getValue();
@@ -400,16 +396,15 @@ void HxCPDSpatialGraphWarp::computeNL() {
     cpd.params.sigmaSquareStop = portEMParams.getValue(1);
     cpd.params.maxIterations = portEMParams.getValue(0);
     cpd.params.useDirections = portUseDirection.getValue();
-    cpd.convertCoordsToMatrix(points1, cpd.xs);
-    cpd.convertCoordsToMatrix(points2, cpd.ys);
-    cpd.convertDirectionsToMatrix(dirs1, cpd.xDirs);
-    cpd.convertDirectionsToMatrix(dirs2, cpd.yDirs);
-    McDMatrix<double> W;
-    McDMatrix<double> G;
-    McDArray<McVec2i> correspondences;
-    const mtalign::AlignInfo info = cpd.align(G, W, correspondences);
-    mcassert(slice2.getNumSelectedVertices() == cpd.ys.nRows());
-    applyNLDeformationToSlice(slice2, resultSG, cpd, W, G);
+    cpd.setPoints(points);
+
+    ma::AlignInfo info;
+    McDArray<McVec3f> shiftedCoords = cpd.align(info);
+
+    McDArray<McVec3f> origCoords = points.trans.positions;
+    resamplePairs(origCoords, shiftedCoords);
+
+    applyNLDeformationToSlice(slice2, resultSG, origCoords, shiftedCoords);
     portCPDResults.setValue(0, info.sigmaSquare);
     portCPDResults.setValue(1, info.kappa);
     portCPDResults.setValue(6, info.numIterations);
@@ -448,22 +443,11 @@ void HxCPDSpatialGraphWarp::resamplePairs(McDArray<McVec3f>& p1,
 
 void HxCPDSpatialGraphWarp::applyNLDeformationToSlice(
     SpatialGraphSelection& slice, HxSpatialGraph* spatialGraph,
-    const CoherentPointDriftNLFisherMises& deformation,
-    const McDMatrix<double>& W, const McDMatrix<double>& G) {
+    const McDArray<McVec3f>& origCoords,
+    const McDArray<McVec3f>& shiftedCoords) {
 
     McWatch watch;
     watch.start();
-    McDMatrix<double> shiftedVertices;
-    deformation.shiftYs(deformation.ys, G, W, shiftedVertices);
-    deformation.rescaleYs(shiftedVertices);
-    McDMatrix<double> origVertices = deformation.ys;
-    deformation.rescaleYs(origVertices);
-    McDArray<McVec3f> shiftedCoords, origCoords;
-
-    McDArray<McVec3f> origDirections, shiftedDirections;
-    deformation.convertMatrixToCoords(shiftedCoords, shiftedVertices);
-    deformation.convertMatrixToCoords(origCoords, origVertices);
-    resamplePairs(origCoords, shiftedCoords);
 
     MovingLeastSquares mls;
     mls.setAlpha(portAlphaForMLS.getValue());

@@ -44,11 +44,10 @@ it also includes some algorithmic details.
 
 Algorithm 1 'linear alignment from orientation' and Algorithm 2 'linear
 alignment from position and orientation' are implemented in `class
-CoherentPointDriftRigidFisherMises`.  Algorithm 3 'elastic alignment' is
-implemented in `class CoherentPointDriftNLFisherMises`.  The algorithms are now
-available through `mtalign::cpd()`.
+CPDLinearAligner`.  Algorithm 3 'elastic alignment' is implemented in `class
+CPDElasticAligner`.  The algorithms are now available through `mtalign::cpd()`.
 
-Call path from the GUI to `CoherentPointDriftNLFisherMises` (Algorithm 3):
+Call path from the GUI to `CPDElasticAligner` (Algorithm 3):
 
  - Qt `ui.applyCPD SIGNAL(clicked())` is processed in
    `QxMicrotubuleAlignSpatialGraphTool::applyCPD()`, which calls
@@ -64,9 +63,9 @@ Call path from the GUI to `CoherentPointDriftNLFisherMises` (Algorithm 3):
    point representation from spatial graph.  Dispatches to specific algorithm:
    `warpSlicesRigid()` for Algorithm 1 and 2; `cpdElastic()` for Algorithm 3.
 
- - `mtalign::cpd()`: Instantiates `CoherentPointDriftNLFisherMises`.  Configures
-   it.  Calls `align()` on it to execute Algorithm 3.  Retrieves result and
-   stores them as `WarpResult`.
+ - `mtalign::cpd()`: Instantiates `CPDElasticAligner`.  Configures it.  Calls
+   `align()` on it to execute Algorithm 3.  Retrieves result and stores them as
+   `WarpResult`.
 
 The class `mtalign::SliceSelector` partitions a `HxSpatialGraph` into slices
 based on the value of an attribute.
@@ -166,6 +165,67 @@ following files might be relevant when testing the alignment:
     spatialgraphstack_3slices_2kvertices.am
     spatialgraphstack_3slices_2kvertices_matchedGreedy_withGap.am
     spatialgraphstack_3slices_2kverticesWithLabels.am
+
+# How to export the microtubulestitching source to a separate git repo?
+
+The sub-directory `zib-amira/microtubulestitching` is exported to a separate git
+repo.  The full history is maintained in `zib-amira`.  The export is done as
+squashed commits from release tags `zibamira-*.*` using the low-level `git
+commit-tree`.
+
+The initial export:
+
+    subdir=microtubulestitching
+    branch=${subdir}/master
+    first=zibamira-2014.56
+
+    read _ _ tree _ <<<"$(git ls-tree ${first} -- ${subdir})"
+    git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${first}'"
+
+    msg="Initial import of zib-amira/${subdir}@${first}"
+    commit=$(git commit-tree ${tree} <<<"${msg}")
+    git update-ref -m "initial export ${subdir}" refs/heads/${branch} ${commit} 0000000000000000000000000000000000000000
+
+    printf '\n%s\n\n' "Branch '${branch}' is now at:" && git show -s ${branch}
+
+For further exports, first search the commit that matches the exported tree:
+
+    prevtree=$(git show -s --pretty=format:%T ${branch})
+    git cat-file tree ${prevtree} >/dev/null || echo "failed to determine prevtree"
+
+    prev=$(
+        git rev-list ${first}^..origin/next |
+        while read r; do
+            printf '%s %s\n' ${r} "$(git ls-tree ${r} -- ${subdir})"
+        done |
+        grep ${prevtree} |
+        while read commit _; do
+           git describe --exact-match ${commit} && break
+        done
+    )
+    git describe --exact-match ${prev} ||
+        echo "failed to determine commit of previous export."
+
+Then create a squashed commit:
+
+    this=zibamira-2015.01
+
+    read _ _ tree _ <<<"$(git ls-tree ${this} -- ${subdir})"
+    git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${first}'"
+
+    commit=$(
+        (
+            echo "Update to zib-amira/${subdir}@${this}"
+            echo
+            echo "Relevant commits since the previous export:"
+            echo
+            git log --oneline --reverse ${prev}..${this} -- ${subdir} | sed -e 's/^/    /'
+        ) |
+        git commit-tree -p ${branch} ${tree}
+    )
+    git update-ref -m "update export ${subdir}" refs/heads/${branch} ${commit} ${branch}
+
+    printf '\n%s\n\n' "Branch '${branch}' is now at:" && git show -s ${branch}
 
 # Changelog
 

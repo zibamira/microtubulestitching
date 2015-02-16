@@ -1,8 +1,7 @@
-#include <hxalignmicrotubules/CoherentPointDriftNLFisherMises.h>
+#include <hxalignmicrotubules/mtalign/CPDElasticAligner.h>
 
 #include <QString>
 
-#include <mclib/McVec2d.h>
 #include <mcla/f77_blas.h>
 #include <mcla/f77_lapack.h>
 #include <mclib/McWatch.h>
@@ -12,102 +11,15 @@
 #include <hxcore/HxSettingsMgr.h>
 #endif
 
-// I(spr) think the two LAPACK calls could be replaced by a single call to the
-// driver routine SPOSV, since A is symmetric.
-static void solve(const McDMatrix<double>& A, const McDMatrix<double>& B,
-                  McDMatrix<double>& X) {
-    // Require square matrices.
-    mcassert(A.nCols() == A.nRows());
-    mcassert(A.nCols() != 0);
+#include <hxalignmicrotubules/mtalign/math.h>
 
-    // LU factorization of A.
-    McDMatrix<double> AT = A;
-    AT.transpose();
-    int M = A.nRows();
-    int N = A.nCols();
-    int* piv = new int[M];
-    int info;
-    f77_dgetrf(M, N, AT.dataPtr(), M, piv, info);
-    mcassert(info == 0);
-
-    // Solve.
-    X = B;
-    X.transpose();
-    N = A.nCols();
-    int LDA = A.nRows();
-    int LDB = B.nRows();
-    int NRHS = B.nCols();
-    f77_dgetrs('N', N, NRHS, AT.dataPtr(), LDA, piv, X.dataPtr(), LDB, info);
-    mcassert(info == 0);
-    X.transpose();
-    delete[] piv;
-}
-
-static void multMatrices(const McDMatrix<double>& A, const McDMatrix<double>& B,
-                         const McDMatrix<double>& C, const double alpha,
-                         const double beta, McDMatrix<double>& result) {
-    result = C;
-    mcassert((A.nRows() == C.nRows()) || (beta == 0));
-    mcassert((B.nCols() == C.nCols()) || (beta == 0));
-    mcassert(A.nCols() == B.nRows());
-    if (beta == 0.0) {
-        result.resize(B.nCols(), A.nRows());
-        result.fill(0.0);
-    } else
-        result.transpose();
-    int M = A.nRows();
-    int N = B.nCols();
-    int K = A.nCols();
-    int LDA = A.nCols();
-    int LDB = B.nCols();
-    int LDC = result.nCols();
-
-    f77_dgemm('T', 'T', M, N, K, alpha, A.dataPtr(), LDA, B.dataPtr(), LDB,
-              beta, result.dataPtr(), LDC);
-    result.transpose();
-}
-
-static void multThreeMatrices(const McDMatrix<double>& A,
-                              const McDMatrix<double>& B,
-                              const McDMatrix<double>& C,
-                              McDMatrix<double>& result) {
-    McDMatrix<double> tempResult(A.nRows(), B.nCols());
-    McDMatrix<double> dummy;
-    multMatrices(A, B, dummy, 1.0, 0.0, tempResult);
-    result.resize(tempResult.nRows(), C.nCols());
-    multMatrices(tempResult, C, dummy, 1.0, 0.0, result);
-}
-
-static double gauss(const McDVector<double>& mean, const double sigmaSquare,
-                    const McDVector<double> x) {
-    McDVector<double> distvec = x;
-    distvec -= mean;
-    const double dist = distvec.length2();
-    return 1.0 /
-           (pow((2.0 * sigmaSquare * M_PI), (double)(distvec.size()) / 2.0)) *
-           exp(-1 * dist / (2.0 * sigmaSquare));
-}
-
-// cf Eq. 6 'Fisher-Mises distribution'.
-static double fisherMises(const McDVector<double>& mean, const double kappa,
-                          const McDVector<double> x) {
-    const double dotProd = mean[0] * x[0] + mean[1] * x[1] + mean[2] * x[2];
-    return kappa / (2.0 * M_PI * (exp(kappa) - exp(-1 * kappa))) *
-           exp(kappa * dotProd);
-}
-
-static double trace(const McDMatrix<double>& mat) {
-    double trace = 0.0;
-    for (int i = 0; i < mat.nCols(); i++)
-        trace += mat[i][i];
-    return trace;
-}
+namespace ma = mtalign;
 
 static void printStdout(const char* msg) {
     printf("%s", msg);
 }
 
-CoherentPointDriftNLFisherMises::CoherentPointDriftNLFisherMises(void) {
+ma::CPDElasticAligner::CPDElasticAligner(void) {
     mMeansAndStds.std = 1.0;
     params.maxIterations = 100;
     params.eDiffRelStop = 1.e-5;
@@ -116,23 +28,92 @@ CoherentPointDriftNLFisherMises::CoherentPointDriftNLFisherMises(void) {
     mPrint = &printStdout;
 }
 
-CoherentPointDriftNLFisherMises::~CoherentPointDriftNLFisherMises(void) {}
+void ma::CPDElasticAligner::setPrint(print_t print) { mPrint = print; }
 
-void CoherentPointDriftNLFisherMises::setPrint(print_t print) {
-    mPrint = print;
+void ma::CPDElasticAligner::print(QString msg) {
+    mPrint(qPrintable(msg + "\n"));
 }
 
-void CoherentPointDriftNLFisherMises::print(QString msg) {
-    mPrint(qPrintable(msg + "\n"));
+static void convertDirectionsToMatrix(const McDArray<McVec3f>& directions,
+                                      McDMatrix<double>& matrix) {
+    matrix.resize(directions.size(), 3);
+    for (int i = 0; i < directions.size(); i++) {
+        McVec3f dir = directions[i];
+        dir.normalize();
+        matrix[i][0] = dir.x;
+        matrix[i][1] = dir.y;
+        matrix[i][2] = dir.z;
+    }
+}
+
+void ma::CPDElasticAligner::setPoints(const FacingPointSets& points) {
+    mcrequire(!params.useDirections ||
+              points.ref.directions.size() == points.ref.positions.size());
+    mcrequire(!params.useDirections ||
+              points.trans.directions.size() == points.trans.positions.size());
+    convertCoordsToMatrix(points.ref.positions, xs);
+    convertDirectionsToMatrix(points.ref.directions, xDirs);
+    convertCoordsToMatrix(points.trans.positions, ys);
+    convertDirectionsToMatrix(points.trans.directions, yDirs);
+    normalize();
+}
+
+static void convertMatrixToCoords(McDArray<McVec3f>& points,
+                                  const McDMatrix<double>& matrix) {
+    points.resize(matrix.nRows());
+    for (int i = 0; i < points.size(); i++) {
+        points[i].x = matrix[i][0];
+        points[i].y = matrix[i][1];
+        points[i].z = 0;
+    }
+}
+
+McDArray<McVec3f> ma::CPDElasticAligner::align(AlignInfo& info) {
+    McDMatrix<double> G;
+    McDMatrix<double> W;
+    info = align(G, W);
+    McDMatrix<double> transCoordsShiftedM;
+    shiftYs(ys, G, W, transCoordsShiftedM);
+    rescaleYs(transCoordsShiftedM);
+    McDArray<McVec3f> transCoords;
+    convertMatrixToCoords(transCoords, transCoordsShiftedM);
+    return transCoords;
+}
+
+static McDMatrix<double> makeG(const McDMatrix<double>& ps, const double beta) {
+    McDMatrix<double> G;
+    G.resize(ps.nRows(), ps.nRows());
+    for (int i = 0; i < ps.nRows(); i++) {
+        for (int j = i; j < ps.nRows(); j++) {
+            McDVector<double> row = ps.getRowVector(i);
+            row -= ps.getRowVector(j);
+            const double dist = exp(-1.0 / (2.0 * beta * beta) * row.length2());
+            G[i][j] = dist;
+            G[j][i] = dist;
+        }
+    }
+    return G;
+}
+
+static McDMatrix<double> getDP(const McDMatrix<double>& P) {
+    McDMatrix<double> dP;
+    dP.resize(P.nRows(), P.nRows());
+    dP.fill(0.0);
+    for (int i = 0; i < P.nRows(); i++) {
+        double diagEntry = 0.0;
+        for (int j = 0; j < P.nCols(); j++) {
+            diagEntry += P[i][j];
+        }
+        dP[i][i] = diagEntry;
+    }
+    return dP;
 }
 
 // This implements Figure S3 'Algorithm for elastic transformation'.  The
 // correspondence between variables here and in the paper should be obvious
 // unless noted otherwise.
-mtalign::AlignInfo
-CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
-                                       McDMatrix<double>& W,
-                                       McDArray<McVec2i>& correspondences) {
+ma::AlignInfo ma::CPDElasticAligner::align(McDMatrix<double>& G,
+                                           McDMatrix<double>& W) {
     const double beta = params.beta;
     const double lambda = params.lambda;
     const double w = params.w;
@@ -150,8 +131,6 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
     print(QString("maxIter: %1").arg(maxIter));
     print(QString("sigmaSquareStop: %1").arg(sigmaSquareStop));
     print(QString("eDiffRelStop: %1").arg(eDiffRelStop));
-
-    normalize();
 
     const int M = ys.nRows();
     const int N = xs.nRows();
@@ -178,7 +157,7 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
     double kappa = 1.0;
 
     print("..init G..");
-    initializeG(G, ys);
+    G = makeG(ys, params.beta);
 
     // Create P, will be filled below.
     McDMatrix<double> P;
@@ -206,7 +185,7 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
         // Get diagonal of P with identity vector multiplied.
         McDMatrix<double> dP;
         print("..getdP..");
-        getDP(P, dP);
+        dP = getDP(P);
 
         // Create the second term in the brackets.
         McDMatrix<double> lambdaSigmaEye(M, M);
@@ -248,7 +227,7 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
         print("..compute new sigma..");
         McDMatrix<double> dPT;
         McDMatrix<double> temp = P;
-        getDP(temp.transpose(), dPT);
+        dPT = getDP(temp.transpose());
         temp = X;
         McDMatrix<double> firstTermMatPart, firstTermMat;
         temp.transpose();
@@ -256,7 +235,7 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
         multMatrices(firstTermMatPart, X, emptyMatrix, 1.0, 0.0, firstTermMat);
 
         // Second term.
-        getDP(P, dP);
+        dP = getDP(P);
         McDMatrix<double> secondTermMatPart, secondTermMat;
         multMatrices(P, X, emptyMatrix, 1.0, 0.0, secondTermMatPart);
         secondTermMatPart.transpose();
@@ -302,7 +281,7 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
         print(QString("This was EM iteration: %1").arg(i));
     }
 
-    mtalign::AlignInfo info;
+    AlignInfo info;
     info.timeInSec = watch.stop();
     print(QString("This took %1 seconds.").arg(info.timeInSec));
     info.sigmaSquare = sigmaSquare;
@@ -313,36 +292,17 @@ CoherentPointDriftNLFisherMises::align(McDMatrix<double>& G,
     return info;
 }
 
-void CoherentPointDriftNLFisherMises::convertDirectionsToMatrix(
-    const McDArray<McVec3f>& directions, McDMatrix<double>& matrix) {
-    matrix.resize(directions.size(), 3);
-    for (int i = 0; i < directions.size(); i++) {
-        McVec3f dir = directions[i];
-        dir.normalize();
-        matrix[i][0] = dir.x;
-        matrix[i][1] = dir.y;
-        matrix[i][2] = dir.z;
-    }
-}
-
-void CoherentPointDriftNLFisherMises::convertCoordsToMatrix(
-    const McDArray<McVec3f>& points, McDMatrix<double>& matrix) {
+void
+ma::CPDElasticAligner::convertCoordsToMatrix(const McDArray<McVec3f>& points,
+                                             McDMatrix<double>& matrix) {
     matrix.resize(points.size(), 2);
     for (int i = 0; i < points.size(); i++) {
         matrix[i][0] = points[i].x;
         matrix[i][1] = points[i].y;
     }
 }
-void CoherentPointDriftNLFisherMises::convertMatrixToCoords(
-    McDArray<McVec3f>& points, const McDMatrix<double>& matrix) {
-    points.resize(matrix.nRows());
-    for (int i = 0; i < points.size(); i++) {
-        points[i].x = matrix[i][0];
-        points[i].y = matrix[i][1];
-    }
-}
 
-void CoherentPointDriftNLFisherMises::normalize() {
+void ma::CPDElasticAligner::normalize() {
     // Compute mean.
     mMeansAndStds.mean = McDVector<double>(xs.nCols());
     mMeansAndStds.mean.fill(0.0);
@@ -384,9 +344,8 @@ void CoherentPointDriftNLFisherMises::normalize() {
     }
 }
 
-bool CoherentPointDriftNLFisherMises::computeKappa(const McDMatrix<double>& P,
-                                                   const double Np,
-                                                   double& kappa) {
+bool ma::CPDElasticAligner::computeKappa(const McDMatrix<double>& P,
+                                         const double Np, double& kappa) {
     print("computeKappa.");
 
     McDMatrix<double> XdT = xDirs;
@@ -404,9 +363,8 @@ bool CoherentPointDriftNLFisherMises::computeKappa(const McDMatrix<double>& P,
     return ret;
 }
 
-bool CoherentPointDriftNLFisherMises::newtonsMethodForKappa(double& kappa,
-                                                            const double c,
-                                                            const double Np) {
+bool ma::CPDElasticAligner::newtonsMethodForKappa(double& kappa, const double c,
+                                                  const double Np) {
     double diff = FLT_MAX;
     int counter = 0;
     if (c > Np - 1.e-4)
@@ -423,28 +381,28 @@ bool CoherentPointDriftNLFisherMises::newtonsMethodForKappa(double& kappa,
     return kappa > 0.0;
 }
 
-double CoherentPointDriftNLFisherMises::kappaFirstDerivative(const double kappa,
-                                                             const double c,
-                                                             const double Np) {
+double ma::CPDElasticAligner::kappaFirstDerivative(const double kappa,
+                                                   const double c,
+                                                   const double Np) {
     const double first = c + Np * (1.0 / kappa - 1.0 / tanh(kappa));
     print(QString("first: %1").arg(first));
     print(QString("c: %1").arg(c));
     return first;
 }
 
-double
-CoherentPointDriftNLFisherMises::kappaSecondDerivative(const double kappa,
-                                                       const double Np) {
+double ma::CPDElasticAligner::kappaSecondDerivative(const double kappa,
+                                                    const double Np) {
     const double second =
         +Np * (-1.0 / (kappa * kappa) + pow(1.0 / sinh(kappa), 2.0));
     print(QString("second: %1").arg(second));
     return second;
 }
 
-void CoherentPointDriftNLFisherMises::computeP(
-    const McDMatrix<double>& X, const McDMatrix<double>& Y,
-    const double sigmaSquare, const double kappa, const double w,
-    McDMatrix<double>& P, double& LL) {
+void ma::CPDElasticAligner::computeP(const McDMatrix<double>& X,
+                                     const McDMatrix<double>& Y,
+                                     const double sigmaSquare,
+                                     const double kappa, const double w,
+                                     McDMatrix<double>& P, double& LL) {
     const bool useDirections = params.useDirections;
     const int M = Y.nRows();
     const int N = X.nRows();
@@ -487,23 +445,10 @@ void CoherentPointDriftNLFisherMises::computeP(
     }
 }
 
-void CoherentPointDriftNLFisherMises::getDP(const McDMatrix<double>& P,
-                                            McDMatrix<double>& dP) {
-    dP.resize(P.nRows(), P.nRows());
-    dP.fill(0.0);
-    for (int i = 0; i < P.nRows(); i++) {
-        double diagEntry = 0.0;
-        for (int j = 0; j < P.nCols(); j++) {
-            diagEntry += P[i][j];
-        }
-        dP[i][i] = diagEntry;
-    }
-}
-
-void CoherentPointDriftNLFisherMises::shiftYs(const McDMatrix<double>& oldYs,
-                                              const McDMatrix<double>& G,
-                                              const McDMatrix<double>& W,
-                                              McDMatrix<double>& shiftedYs) {
+void ma::CPDElasticAligner::shiftYs(const McDMatrix<double>& oldYs,
+                                    const McDMatrix<double>& G,
+                                    const McDMatrix<double>& W,
+                                    McDMatrix<double>& shiftedYs) {
     shiftedYs = oldYs;
     for (int i = 0; i < oldYs.nRows(); i++) {
         McDVector<double> shift(oldYs.nCols());
@@ -521,8 +466,7 @@ void CoherentPointDriftNLFisherMises::shiftYs(const McDMatrix<double>& oldYs,
     }
 }
 
-void
-CoherentPointDriftNLFisherMises::rescaleYs(McDMatrix<double>& oldYs) const {
+void ma::CPDElasticAligner::rescaleYs(McDMatrix<double>& oldYs) const {
     for (int i = 0; i < oldYs.nRows(); i++) {
         McDVector<double> newY = oldYs.getRowVector(i);
         newY *= mMeansAndStds.std;
@@ -531,22 +475,8 @@ CoherentPointDriftNLFisherMises::rescaleYs(McDMatrix<double>& oldYs) const {
     }
 }
 
-void CoherentPointDriftNLFisherMises::initializeG(McDMatrix<double>& G,
-                                                  const McDMatrix<double>& ps) {
-    const double beta = params.beta;
-    G.resize(ps.nRows(), ps.nRows());
-    for (int i = 0; i < ps.nRows(); i++)
-        for (int j = i; j < ps.nRows(); j++) {
-            McDVector<double> row = ps.getRowVector(i);
-            row -= ps.getRowVector(j);
-            double dist = exp(-1.0 / (2.0 * beta * beta) * row.length2());
-            G[i][j] = dist;
-            G[j][i] = dist;
-        }
-}
-
-double CoherentPointDriftNLFisherMises::sumSquaredDistances(
-    const McDMatrix<double>& p1, const McDMatrix<double>& p2) {
+double ma::CPDElasticAligner::sumSquaredDistances(const McDMatrix<double>& p1,
+                                                  const McDMatrix<double>& p2) {
     double sumOfSquaredDistances = 0.0;
     for (int i = 0; i < p1.nRows(); i++)
         for (int j = 0; j < p2.nRows(); j++) {

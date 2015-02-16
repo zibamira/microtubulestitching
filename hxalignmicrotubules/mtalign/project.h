@@ -12,14 +12,47 @@ namespace mtalign {
 
 struct FacingPointSets;
 
+/// `ProjectionType` selects the algorithm to project points in
+/// `projectEndPoints()`.  Use `P_ORTHOGONAL` to select the projection
+/// described in [Weber 2014].
+enum ProjectionType {
+    // Uses same indices as MicrotubuleSpatialGraphAligner::ProjectionTypes.
+
+    /// Orthogonal projection as described in [Weber 2014].
+    P_ORTHOGONAL,
+
+    /// See source.
+    P_LINEAR,
+
+    /// See source.
+    P_TANGENT,
+
+    /// See source.
+    P_FIT_0,
+
+    /// See source.
+    P_FIT_1,
+
+    /// See source.
+    P_FIT_2,
+
+    /// See source.
+    P_FIT_3,
+
+    /// See source.
+    P_APPROX_TANGENT,
+
+    /// See source.
+    P_NONE
+};
+
 /// `EndPointParams` specifies how endpoints on sections boundaries are
 /// extracted from a spatial graph stack.
 struct EndPointParams {
     int refSliceNum;
     int transSliceNum;
     float endPointRegion;
-    McString projectionType;
-    int transformType;
+    ProjectionType projectionType;
     float projectionPlane;
     float angleToPlaneFilter;
     float maxDistForAngle;

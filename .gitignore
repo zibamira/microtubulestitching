@@ -1,0 +1,10 @@
+version.cpp
+winversion.rc
+winversion.h
+init.cpp
+api.h
+GNUmakefile
+Makefile
+*.vc*proj*
+*.sln
+.DS_Store

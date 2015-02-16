@@ -121,11 +121,10 @@ void WriteMatchingProperties2::writeParametersForTwoConsecutiveSlices(
     params.refSliceNum = slice1Idx;
     params.transSliceNum = slice2Idx;
     params.endPointRegion = 50;
-    params.projectionType = "Orthogonal";
+    params.projectionType = ma::P_ORTHOGONAL;
     params.projectionPlane = midplane;
     params.useAbsouteValueForEndPointRegion = false;
     params.maxDistForAngle = 2000;
-    params.transformType = 0;
     SpatialGraphSelection slice1, slice2;
     ma::FacingPointSets pr = ma::projectEndPoints(sg, slice1, slice2, params);
 

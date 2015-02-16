@@ -14,8 +14,9 @@
 
 #include <hxalignmicrotubules/api.h>
 
-class CoherentPointDriftNLFisherMises;
-class CoherentPointDriftRigidFisherMises;
+namespace mtalign {
+class CPDLinearAligner;
+}
 class HxSpatialGraph;
 class MovingLeastSquares;
 class SpatialGraphSelection;
@@ -82,14 +83,14 @@ class HXALIGNMICROTUBULES_API HxCPDSpatialGraphWarp : public HxCompModule {
     static void warpPoint(const McVec3f& source, McVec3f& traget,
                           MovingLeastSquares& mlsInterpolator);
 
-    void applyNLDeformationToSlice(
-        SpatialGraphSelection& slice, HxSpatialGraph* spatialGraph,
-        const CoherentPointDriftNLFisherMises& deformation,
-        const McDMatrix<double>& W, const McDMatrix<double>& G);
+    void applyNLDeformationToSlice(SpatialGraphSelection& slice,
+                                   HxSpatialGraph* spatialGraph,
+                                   const McDArray<McVec3f>& origCoords,
+                                   const McDArray<McVec3f>& shiftedCoords);
 
     void applyRigidDeformationToSliceVanMises(
         SpatialGraphSelection& slice, HxSpatialGraph* spatialGraph,
-        const CoherentPointDriftRigidFisherMises& deformation,
+        const mtalign::CPDLinearAligner& deformation,
         const McDMatrix<double>& R, const double s, const McDVector<double>& t);
 
     void computeRigidVanMises();

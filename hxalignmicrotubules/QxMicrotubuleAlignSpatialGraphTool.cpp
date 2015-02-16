@@ -339,14 +339,14 @@ void QxMicrotubuleAlignSpatialGraphTool::applyCPD() {
     if (QString::compare(cpdType, QString("Rigid")) == 0) {
         mcthrow("'Rigid' is not implemented!");
     } else if (QString::compare(cpdType, QString("RigidFisherMises")) == 0) {
-        cpdParams.type = ma::CPD_RIGID_FISHER_MISES;
-        cpdParams.rigid.withScaling = ui.cpdUseScalingButton->isChecked();
-        cpdParams.rigid.usePositions = ui.cpdWithCoordButton->isChecked();
-        cpdParams.rigid.useDirections = ui.cpdUseDirectionButton->isChecked();
-        cpdParams.rigid.w = ui.cpdWLineEdit->text().toDouble();
-        cpdParams.rigid.maxIterations = 200;
-        cpdParams.rigid.eDiffRelStop = 1.e-5;
-        cpdParams.rigid.sigmaSquareStop = 1.e-7;
+        cpdParams.type = ma::CPD_LINEAR;
+        cpdParams.linear.withScaling = ui.cpdUseScalingButton->isChecked();
+        cpdParams.linear.usePositions = ui.cpdWithCoordButton->isChecked();
+        cpdParams.linear.useDirections = ui.cpdUseDirectionButton->isChecked();
+        cpdParams.linear.w = ui.cpdWLineEdit->text().toDouble();
+        cpdParams.linear.maxIterations = 200;
+        cpdParams.linear.eDiffRelStop = 1.e-5;
+        cpdParams.linear.sigmaSquareStop = 1.e-7;
     } else if (QString::compare(cpdType, QString("non-linear")) == 0) {
         cpdParams.type = ma::CPD_ELASTIC;
         cpdParams.elastic.beta = ui.cpdBetaLineEdit->text().toDouble();

@@ -10,7 +10,7 @@ namespace ma = mtalign;
 
 namespace {
 
-class mtalign_SliceSelector_withSpatialGraphThreeStackedSections
+class mtalign__SliceSelector_withSpatialGraphThreeStackedSections
     : public ::testing::Test {
   protected:
     virtual void SetUp() {
@@ -24,7 +24,7 @@ class mtalign_SliceSelector_withSpatialGraphThreeStackedSections
 
 }  // namespace.
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldDistinguishOrderedAndUnorderedAttributes) {
     EXPECT_TRUE(
         ma::SliceSelector::isOrderedAttribute(mSpatialGraph, "section"));
@@ -32,25 +32,25 @@ TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
         ma::SliceSelector::isOrderedAttribute(mSpatialGraph, "unordered"));
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldDetermineExpectedNumberOfSections) {
     EXPECT_EQ(3, mSliceSelector.getNumSlices());
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldMapFromSliceIndexToAttribute) {
     const int expectedAttribute = 1;  // of 1, 2, 3.
     EXPECT_EQ(expectedAttribute,
               mSliceSelector.getSliceAttributeValueFromIndex(0));
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldMapFromVertexToSliceIndex) {
     const int expectedIndex = 2;  // of 0, 1, 2.
     EXPECT_EQ(expectedIndex, mSliceSelector.getSliceIdxOfVertex(5));
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldComputeZRange) {
     SpatialGraphSelection sel(mSpatialGraph);
     sel.selectVertex(2);
@@ -60,7 +60,7 @@ TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
     EXPECT_FLOAT_EQ(1.9, mm.max);
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldComputeMidPlane) {
     const int sliceIdxFirst = 0;  // of 0, 1, 2.
     const int sliceIdxSecond = 1;
@@ -70,7 +70,7 @@ TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
         0.95, mSliceSelector.computeMidPlane(sliceIdxSecond, sliceIdxFirst));
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldSelectSlice) {
     const int attrVal = 2;  // of 1, 2, 3.
     SpatialGraphSelection sel;
@@ -81,7 +81,7 @@ TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
     EXPECT_EQ(3, sel.getSelectedVertex(1));
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        shouldSelectAdjacentHalfSlices) {
     const int attrValLower = 1;  // of 1, 2, 3.
     const int attrValHigher = 2;
@@ -96,7 +96,7 @@ TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
     EXPECT_EQ(2, selHigher.getSelectedVertex(0));
 }
 
-TEST_F(mtalign_SliceSelector_withSpatialGraphThreeStackedSections,
+TEST_F(mtalign__SliceSelector_withSpatialGraphThreeStackedSections,
        selectsCloseToMidplane) {
     const int idxLower = 0;
     const int idxHigher = 1;

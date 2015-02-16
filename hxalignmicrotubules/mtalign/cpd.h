@@ -1,10 +1,9 @@
 #pragma once
 
-#include <mclib/McMat4f.h>
-#include <mclib/McVec3f.h>
 #include <mclib/McDArray.h>
-
-#include <hxalignmicrotubules/MovingLeastSquares.h>
+#include <mclib/McMat4f.h>
+#include <mclib/McVec2d.h>
+#include <mclib/McVec3f.h>
 
 namespace mtalign {
 
@@ -15,11 +14,12 @@ struct FacingPointSets;
 enum CPDType {
     // The first index is 1, because `CPD_RIGID` has been removed.
 
-    /// `CPD_RIGID_FISHER_MISES` selects algorithm 1 'rotation from line
+    /// `CPD_LINEAR` selects algorithm 1 'rotation from line
     /// orientation' or algorithm 2 'rotation, scale, and translation from
     /// orientation and endpoint position' (see Weber 2014), depending on the
-    /// value of `CPDParams.useDirections` and `CPDParams.usePositions`.
-    CPD_RIGID_FISHER_MISES = 1,
+    /// value of `AlignParamsLinear.useDirections` and
+    /// `AlignParamsLinear.usePositions`.
+    CPD_LINEAR = 1,
 
     /// `CPD_ELASTIC` selects algorithm 3 'elastic transformation' (see
     /// Weber 2014).
@@ -43,9 +43,9 @@ struct AlignParamsElastic : public AlignParams {
     float sampleDistForWarpingLandmarks;
 };
 
-/// `AlignParamsRigidFisherMises` contains additional parameters for
-/// `cpdRigidFisherMises()`.
-struct AlignParamsRigidFisherMises : public AlignParams {
+/// `AlignParamsLinear` contains additional parameters for
+/// `cpdLinear()`.
+struct AlignParamsLinear : public AlignParams {
     bool usePositions;
     bool withScaling;
 };
@@ -56,8 +56,8 @@ struct CPDParams {
     CPDType type;
 
     union {
-        /// When `type` is `CPD_RIGID_FISHER_MISES`.
-        AlignParamsRigidFisherMises rigid;
+        /// When `type` is `CPD_LINEAR`.
+        AlignParamsLinear linear;
 
         /// When `type` is `CPD_ELASTIC`.
         AlignParamsElastic elastic;
@@ -96,23 +96,31 @@ struct AlignInfo {
     double timeInSec;
 };
 
+/// `MLSParams` are pairs of corresponding landmarks `(p, q)` that are used to
+/// define a moving least squares warp together with the `alpha` parameter.
+struct MLSParams {
+    float alpha;
+    McDArray<McVec2d> ps;
+    McDArray<McVec2d> qs;
+};
+
 /// `WarpResult` is returned by the coherent point drift functions (`cpd()` and
 /// variants).
 struct WarpResult {
-    int type;  // 0 if transform matrix, 1 if mls interpolation.
-    MovingLeastSquares mls;
+    int type;  // 0 if transform matrix, 1 if MLS.
+    MLSParams mlsParams;
     McMat4f transformMatrix;
     int refSlice;
     int transSlice;
     AlignInfo alignInfo;
 };
 
-/// `cpdRigidFisherMises()` applies the coherent point drift algorithm with a
+/// `cpdLinear()` applies the coherent point drift algorithm with a
 /// rigid deformation model.  It takes the position of the `points` and their
 /// direction into account.  The direction distribution is modeled as a
 /// Fisher-Mises distribution.
-void cpdRigidFisherMises(const FacingPointSets& points, const CPDParams& params,
-                         WarpResult& warpResult);
+void cpdLinear(const FacingPointSets& points, const CPDParams& params,
+               WarpResult& warpResult);
 
 /// `cpdElastic()` applies the coherent point drift algorithm with an elastic
 /// deformation model.  It takes the position of the `points` and their

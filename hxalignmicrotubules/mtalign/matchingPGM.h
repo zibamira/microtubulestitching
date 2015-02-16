@@ -10,22 +10,23 @@ namespace mtalign {
 struct FacingPointSets;
 struct MatchingPGM;
 
+/// `MatchingPGMParams` contains the parameters for `matchingPGM()`.
 struct MatchingPGMParams {
     /// `evidence` contains fixed user-defined assignments as pairs of 'ref'
-    /// and 'trans' indices into the two `FacingPointSets`.
+    /// and 'trans' indices into the `FacingPointSets`.
     McDArray<McVec2i> evidence;
 
-    /// `weightConfig` specifies the `PGMPairWeights` used for the
-    /// `PGMMatcher`.
+    /// `weightConfig` specifies the params of the `PGMPairWeights` used for
+    /// the `PGMMatcher`.
     PGMPairWeightsParams weightConfig;
 
-    /// `pairFactorParam` is used in the `PGMMatcher`.
+    /// `pairFactorParam` is used for the `PGMMatcher`.
     double pairFactorParam;
 };
 
-/// `matchingPGM()` computes a matching between the two `FacingPointSets` as
+/// `matchingPGM()` computes a matching between the `FacingPointSets` as
 /// specified by `MatchingPGMParams`.  `params.evidence` contains fixed
-/// user-defined assignments as pairs of 'ref' and 'trans' indices into the two
+/// user-defined assignments as pairs of 'ref' and 'trans' indices into the
 /// `FacingPointSets`.
 MatchingPGM matchingPGM(const FacingPointSets& pts,
                         const MatchingPGMParams& params);

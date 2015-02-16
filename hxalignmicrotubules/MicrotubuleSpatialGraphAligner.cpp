@@ -46,6 +46,16 @@ const McString MicrotubuleSpatialGraphAligner::ProjectionTypes[] = {
     McString("None")
 };
 
+static ma::ProjectionType asEnumProjectionType(const McString& s) {
+    const int nTypes = MicrotubuleSpatialGraphAligner::NumProjectionTypes;
+    for (int i = 0; i < nTypes; i++) {
+        if (s == MicrotubuleSpatialGraphAligner::ProjectionTypes[i]) {
+            return ma::ProjectionType(i);
+        }
+    }
+    return ma::P_NONE;
+}
+
 const int MicrotubuleSpatialGraphAligner::NumTransformTypes = 4;
 const McString MicrotubuleSpatialGraphAligner::TransformTypes[] = {
     McString("Rigid"),  McString("Rigid + iso-scale"),
@@ -274,8 +284,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
             // Create a moving-least-squares identity transform by mapping the
             // ps to itself, so that the downstream pipeline should work
             // without changes, since it looks like a regular MLS.
-            McDArray<McVec2d> ps = result.mls.ps();
-            result.mls.setLandmarks(ps, ps);
+            result.mlsParams.qs = result.mlsParams.ps;
         }
     }
 
@@ -295,8 +304,12 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
         pb->set("alpha", cpdParameters.alphaForMLS);
         mGraph->parameters.insert(pb);
         for (int i = mSelectionHelper.getNumSlices() - 1; i >= 1; --i) {
-            addWarpPointsToParams(warpResults[i - 1].mls, i);
-            applyMLS(warpResults[i - 1].mls, i, editor);
+            addWarpPointsToParams(warpResults[i - 1].mlsParams, i);
+            MovingLeastSquares mls;
+            mls.setAlpha(warpResults[i - 1].mlsParams.alpha);
+            mls.setLandmarks(warpResults[i - 1].mlsParams.ps,
+                             warpResults[i - 1].mlsParams.qs);
+            applyMLS(mls, i, editor);
         }
     }
 
@@ -306,7 +319,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
 }
 
 void MicrotubuleSpatialGraphAligner::addWarpPointsToParams(
-    const MovingLeastSquares& mls, const int sliceNum) {
+    const ma::MLSParams& mlsParams, const int sliceNum) {
 
     HxParamBundle* bundle =
         mGraph->parameters.bundle("CPDTransformLandmarks", false);
@@ -316,13 +329,13 @@ void MicrotubuleSpatialGraphAligner::addWarpPointsToParams(
     HxParamBundle* sliceLandmarks = new HxParamBundle(sliceNums.dataPtr());
     McString label;
 
-    for (int i = 0; i < mls.ps().size(); i++) {
+    for (int i = 0; i < mlsParams.ps.size(); i++) {
         label.printf("PQ%d", i);
         float coord[4];
-        coord[0] = mls.ps()[i].x;
-        coord[1] = mls.ps()[i].y;
-        coord[2] = mls.qs()[i].x;
-        coord[3] = mls.qs()[i].y;
+        coord[0] = mlsParams.ps[i].x;
+        coord[1] = mlsParams.ps[i].y;
+        coord[2] = mlsParams.qs[i].x;
+        coord[3] = mlsParams.qs[i].y;
         sliceLandmarks->set(label.dataPtr(), 4, coord);
     }
     bundle->insert(sliceLandmarks);
@@ -602,13 +615,8 @@ MicrotubuleSpatialGraphAligner::makePointRepresentationParams(
     params.projectionPlane = projectionPlane;
     params.endPointRegion = mEndPointRegion;
     params.useAbsouteValueForEndPointRegion = mUseAbsouteValueForEndPointRegion;
-    params.projectionType = mProjectionType;
+    params.projectionType = asEnumProjectionType(mProjectionType);
     params.numMaxPointsForInitTransform = mNumMaxPointsForInitialTransform;
-    if (mTransformType == TransformTypes[1]) {
-        params.transformType = 1;
-    } else {
-        params.transformType = 0;
-    }
     params.maxDistForAngle = mMaxDistForAngle;
     params.angleToPlaneFilter = mAngleToPlaneFilter;
     return params;

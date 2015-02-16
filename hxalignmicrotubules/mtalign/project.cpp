@@ -8,21 +8,20 @@
 #include <mclib/McPlane.h>
 #include <mclib/McLine.h>
 
-#include <hxalignmicrotubules/MicrotubuleSpatialGraphAligner.h>
 #include <hxalignmicrotubules/mtalign/SliceSelector.h>
 #include <hxalignmicrotubules/mtalign/data.h>
 
 // Without using `namespace std`, the following tests break:
 //
-//     PointRepresentationCreatorForMicrotubules/WithParam.shouldComputeBaseline/4,
+//     mtalign__projectTestWithTestingData.shouldComputeBaseline/4,
 //     where GetParam() = { filename: 'spatialgraph/fullp0p1.am',
 //     projectionType: 'Fit degree 1' }
 //
-//     PointRepresentationCreatorForMicrotubules/WithParam.shouldComputeBaseline/5,
+//     mtalign__projectTestWithTestingData.shouldComputeBaseline/5,
 //     where GetParam() = { filename: 'spatialgraph/fullp0p1.am',
 //     projectionType: 'Fit degree 2' }
 //
-//     PointRepresentationCreatorForMicrotubules/WithParam.shouldComputeBaseline/6,
+//     mtalign__projectTestWithTestingData.shouldComputeBaseline/6,
 //     where GetParam() = { filename: 'spatialgraph/fullp0p1.am',
 //     projectionType: 'Fit degree 3' }
 //
@@ -461,8 +460,7 @@ static McDArray<McVec3f> projectToPlane(const HxSpatialGraph* sg,
                                         const ma::EndPointParams& params) {
     McDArray<McVec3f> result(0);
     // Orthogonal projection: simply set the z value to planeZ.
-    if (params.projectionType ==
-        MicrotubuleSpatialGraphAligner::ProjectionTypes[0]) {
+    if (params.projectionType == ma::P_ORTHOGONAL) {
         SpatialGraphSelection::Iterator iter(vertices);
         iter.vertices.reset();
         int vNum = iter.vertices.nextSelected();
@@ -474,9 +472,7 @@ static McDArray<McVec3f> projectToPlane(const HxSpatialGraph* sg,
     }
 
     // Linear projection.
-    else if (params.projectionType ==
-             MicrotubuleSpatialGraphAligner::ProjectionTypes[1]) {
-
+    else if (params.projectionType == ma::P_LINEAR) {
         SpatialGraphSelection::Iterator iter(vertices);
         iter.vertices.reset();
         int vNum = iter.vertices.nextSelected();
@@ -503,29 +499,22 @@ static McDArray<McVec3f> projectToPlane(const HxSpatialGraph* sg,
 
             vNum = iter.vertices.nextSelected();
         }
-    } else if (params.projectionType ==
-               MicrotubuleSpatialGraphAligner::ProjectionTypes[2]) {
+    } else if (params.projectionType == ma::P_TANGENT) {
         result = projectToPlaneTangent(sg, vertices, planeZ);
-    } else if (params.projectionType ==
-               MicrotubuleSpatialGraphAligner::ProjectionTypes[3]) {
+    } else if (params.projectionType == ma::P_FIT_0) {
         result = projectToPlaneFit(sg, vertices, planeZ, 0);
-    } else if (params.projectionType ==
-               MicrotubuleSpatialGraphAligner::ProjectionTypes[4]) {
+    } else if (params.projectionType == ma::P_FIT_1) {
         result = projectToPlaneFit(sg, vertices, planeZ, 1);
-    } else if (params.projectionType ==
-               MicrotubuleSpatialGraphAligner::ProjectionTypes[5]) {
+    } else if (params.projectionType == ma::P_FIT_2) {
         result = projectToPlaneFit(sg, vertices, planeZ, 2);
-    } else if (params.projectionType ==
-               MicrotubuleSpatialGraphAligner::ProjectionTypes[6]) {
+    } else if (params.projectionType == ma::P_FIT_3) {
         result = projectToPlaneFit(sg, vertices, planeZ, 3);
-    } else if (params.projectionType ==
-               MicrotubuleSpatialGraphAligner::ProjectionTypes[7]) {
+    } else if (params.projectionType == ma::P_APPROX_TANGENT) {
         result = projectToPlaneApproxDirection(sg, vertices, planeZ,
                                                params.maxDistForAngle);
     }
     // No projection.
-    else if (params.projectionType ==
-             MicrotubuleSpatialGraphAligner::ProjectionTypes[8]) {
+    else if (params.projectionType == ma::P_NONE) {
         SpatialGraphSelection::Iterator iter(vertices);
         iter.vertices.reset();
         int vNum = iter.vertices.nextSelected();

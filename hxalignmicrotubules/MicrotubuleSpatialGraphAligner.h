@@ -297,6 +297,6 @@ class MicrotubuleSpatialGraphAligner : public McHandable {
     void applyMLS(MovingLeastSquares& mls, const int start,
                   HxNeuronEditorSubApp* editor);
 
-    void addWarpPointsToParams(const MovingLeastSquares& mls,
+    void addWarpPointsToParams(const mtalign::MLSParams& mlsParams,
                                const int sliceNum);
 };

@@ -1,18 +1,18 @@
-#include <hxalignmicrotubules/IPOPTForRigidAlignWithoutScale.h>
+#include <hxalignmicrotubules/mtalign/IPOPTForCPDLinearAlignerWithoutScale.h>
 
-#include <hxalignmicrotubules/IPOPTForCPD.h>
+#include <hxalignmicrotubules/mtalign/IPOPTForCPD.h>
 
 using namespace Ipopt;
 
 namespace {
 
-class IPOPTForRigidAlignWithoutScale : public IPOPTForCPD {
+class IPOPTForCPDLinearAlignerWithoutScale : public mtalign::IPOPTForCPD {
   public:
     /** default constructor */
-    IPOPTForRigidAlignWithoutScale();
+    IPOPTForCPDLinearAlignerWithoutScale();
 
     /** default destructor */
-    virtual ~IPOPTForRigidAlignWithoutScale();
+    virtual ~IPOPTForCPDLinearAlignerWithoutScale();
 
     /**@name Overloaded from TNLP */
     //@{
@@ -86,27 +86,29 @@ class IPOPTForRigidAlignWithoutScale : public IPOPTForCPD {
      */
     //@{
     //
-    IPOPTForRigidAlignWithoutScale(const IPOPTForRigidAlignWithoutScale&);
-    IPOPTForRigidAlignWithoutScale&
-    operator=(const IPOPTForRigidAlignWithoutScale&);
+    IPOPTForCPDLinearAlignerWithoutScale(
+        const IPOPTForCPDLinearAlignerWithoutScale&);
+    IPOPTForCPDLinearAlignerWithoutScale&
+    operator=(const IPOPTForCPDLinearAlignerWithoutScale&);
     //@}
 };
 
 }  // namespace
 
-IPOPTForCPD* createIPOPTForRigidAlignWithoutScale() {
-    return new IPOPTForRigidAlignWithoutScale;
+mtalign::IPOPTForCPD* mtalign::createIPOPTForCPDLinearAlignerWithoutScale() {
+    return new IPOPTForCPDLinearAlignerWithoutScale;
 }
 
-IPOPTForRigidAlignWithoutScale::IPOPTForRigidAlignWithoutScale() { s = 1.0; }
+IPOPTForCPDLinearAlignerWithoutScale::IPOPTForCPDLinearAlignerWithoutScale() {
+    s = 1.0;
+}
 
-IPOPTForRigidAlignWithoutScale::~IPOPTForRigidAlignWithoutScale() {}
+IPOPTForCPDLinearAlignerWithoutScale::~IPOPTForCPDLinearAlignerWithoutScale() {}
 
 // returns the size of the problem
-bool IPOPTForRigidAlignWithoutScale::get_nlp_info(Index& n, Index& m,
-                                                  Index& nnz_jac_g,
-                                                  Index& nnz_h_lag,
-                                                  IndexStyleEnum& index_style) {
+bool IPOPTForCPDLinearAlignerWithoutScale::get_nlp_info(
+    Index& n, Index& m, Index& nnz_jac_g, Index& nnz_h_lag,
+    IndexStyleEnum& index_style) {
     n = 3;
     m = 0;
     nnz_jac_g = 0;
@@ -117,9 +119,10 @@ bool IPOPTForRigidAlignWithoutScale::get_nlp_info(Index& n, Index& m,
 }
 
 // returns the variable bounds
-bool IPOPTForRigidAlignWithoutScale::get_bounds_info(Index n, Number* x_l,
-                                                     Number* x_u, Index m,
-                                                     Number* g_l, Number* g_u) {
+bool IPOPTForCPDLinearAlignerWithoutScale::get_bounds_info(Index n, Number* x_l,
+                                                           Number* x_u, Index m,
+                                                           Number* g_l,
+                                                           Number* g_u) {
 
     assert(n == 3);
     assert(m == 0);
@@ -138,7 +141,7 @@ bool IPOPTForRigidAlignWithoutScale::get_bounds_info(Index n, Number* x_l,
 }
 
 // returns the initial point for the problem
-bool IPOPTForRigidAlignWithoutScale::get_starting_point(
+bool IPOPTForCPDLinearAlignerWithoutScale::get_starting_point(
     Index n, bool init_x, Number* x, bool init_z, Number* z_L, Number* z_U,
     Index m, bool init_lambda, Number* lambda) {
 
@@ -154,8 +157,9 @@ bool IPOPTForRigidAlignWithoutScale::get_starting_point(
 }
 
 // returns the value of the objective function
-bool IPOPTForRigidAlignWithoutScale::eval_f(Index n, const Number* x,
-                                            bool new_x, Number& obj_value) {
+bool IPOPTForCPDLinearAlignerWithoutScale::eval_f(Index n, const Number* x,
+                                                  bool new_x,
+                                                  Number& obj_value) {
     assert(n == 3);
 
     McDVector<double> xVec;
@@ -167,8 +171,9 @@ bool IPOPTForRigidAlignWithoutScale::eval_f(Index n, const Number* x,
 }
 
 // return the gradient of the objective function grad_{x} f(x)
-bool IPOPTForRigidAlignWithoutScale::eval_grad_f(Index n, const Number* x,
-                                                 bool new_x, Number* grad_f) {
+bool IPOPTForCPDLinearAlignerWithoutScale::eval_grad_f(Index n, const Number* x,
+                                                       bool new_x,
+                                                       Number* grad_f) {
     assert(n == 3);
     McDVector<double> xVec;
     McDVector<double> gradient;
@@ -180,8 +185,9 @@ bool IPOPTForRigidAlignWithoutScale::eval_grad_f(Index n, const Number* x,
 }
 
 // return the value of the constraints: g(x)
-bool IPOPTForRigidAlignWithoutScale::eval_g(Index n, const Number* x,
-                                            bool new_x, Index m, Number* g) {
+bool IPOPTForCPDLinearAlignerWithoutScale::eval_g(Index n, const Number* x,
+                                                  bool new_x, Index m,
+                                                  Number* g) {
     assert(n == 3);
     assert(m == 0);
 
@@ -189,21 +195,22 @@ bool IPOPTForRigidAlignWithoutScale::eval_g(Index n, const Number* x,
 }
 
 // return the structure or values of the jacobian
-bool IPOPTForRigidAlignWithoutScale::eval_jac_g(Index n, const Number* x,
-                                                bool new_x, Index m,
-                                                Index nele_jac, Index* iRow,
-                                                Index* jCol, Number* values) {
+bool IPOPTForCPDLinearAlignerWithoutScale::eval_jac_g(Index n, const Number* x,
+                                                      bool new_x, Index m,
+                                                      Index nele_jac,
+                                                      Index* iRow, Index* jCol,
+                                                      Number* values) {
 
     return true;
 }
 
 // return the structure or values of the hessian
-bool IPOPTForRigidAlignWithoutScale::eval_h(Index n, const Number* x,
-                                            bool new_x, Number obj_factor,
-                                            Index m, const Number* lambda,
-                                            bool new_lambda, Index nele_hess,
-                                            Index* iRow, Index* jCol,
-                                            Number* values) {
+bool IPOPTForCPDLinearAlignerWithoutScale::eval_h(Index n, const Number* x,
+                                                  bool new_x, Number obj_factor,
+                                                  Index m, const Number* lambda,
+                                                  bool new_lambda,
+                                                  Index nele_hess, Index* iRow,
+                                                  Index* jCol, Number* values) {
     if (values == NULL) {
         // return the structure. This is a symmetric matrix, fill the lower left
         // triangle only.
@@ -241,7 +248,7 @@ bool IPOPTForRigidAlignWithoutScale::eval_h(Index n, const Number* x,
     return true;
 }
 
-void IPOPTForRigidAlignWithoutScale::finalize_solution(
+void IPOPTForCPDLinearAlignerWithoutScale::finalize_solution(
     SolverReturn status, Index n, const Number* x, const Number* z_L,
     const Number* z_U, Index m, const Number* g, const Number* lambda,
     Number obj_value, const IpoptData* ip_data,

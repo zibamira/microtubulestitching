@@ -1,21 +1,21 @@
-#include <hxalignmicrotubules/IPOPTForRigidAlign.h>
+#include <hxalignmicrotubules/mtalign/IPOPTForCPDLinearAligner.h>
 
 #include <cassert>
 #include <iostream>
 
-#include <hxalignmicrotubules/IPOPTForCPD.h>
+#include <hxalignmicrotubules/mtalign/IPOPTForCPD.h>
 
 using namespace Ipopt;
 
 namespace {
 
-class IPOPTForRigidAlign : public IPOPTForCPD {
+class IPOPTForCPDLinearAligner : public mtalign::IPOPTForCPD {
   public:
     /** default constructor */
-    IPOPTForRigidAlign();
+    IPOPTForCPDLinearAligner();
 
     /** default destructor */
-    virtual ~IPOPTForRigidAlign();
+    virtual ~IPOPTForCPDLinearAligner();
 
     /**@name Overloaded from TNLP */
     //@{
@@ -89,23 +89,25 @@ class IPOPTForRigidAlign : public IPOPTForCPD {
      */
     //@{
     //
-    IPOPTForRigidAlign(const IPOPTForRigidAlign&);
-    IPOPTForRigidAlign& operator=(const IPOPTForRigidAlign&);
+    IPOPTForCPDLinearAligner(const IPOPTForCPDLinearAligner&);
+    IPOPTForCPDLinearAligner& operator=(const IPOPTForCPDLinearAligner&);
     //@}
 };
 
 }  // namespace
 
-IPOPTForCPD* createIPOPTForRigidAlign() { return new IPOPTForRigidAlign; }
+mtalign::IPOPTForCPD* mtalign::createIPOPTForCPDLinearAligner() {
+    return new IPOPTForCPDLinearAligner;
+}
 
 // constructor
-IPOPTForRigidAlign::IPOPTForRigidAlign() {}
+IPOPTForCPDLinearAligner::IPOPTForCPDLinearAligner() {}
 
 // destructor
-IPOPTForRigidAlign::~IPOPTForRigidAlign() {}
+IPOPTForCPDLinearAligner::~IPOPTForCPDLinearAligner() {}
 
 // returns the size of the problem
-bool IPOPTForRigidAlign::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
+bool IPOPTForCPDLinearAligner::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
                                       Index& nnz_h_lag,
                                       IndexStyleEnum& index_style) {
     n = 4;
@@ -120,7 +122,7 @@ bool IPOPTForRigidAlign::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
 }
 
 // returns the variable bounds
-bool IPOPTForRigidAlign::get_bounds_info(Index n, Number* x_l, Number* x_u,
+bool IPOPTForCPDLinearAligner::get_bounds_info(Index n, Number* x_l, Number* x_u,
                                          Index m, Number* g_l, Number* g_u) {
 
     assert(n == 4);
@@ -141,7 +143,7 @@ bool IPOPTForRigidAlign::get_bounds_info(Index n, Number* x_l, Number* x_u,
 }
 
 // returns the initial point for the problem
-bool IPOPTForRigidAlign::get_starting_point(Index n, bool init_x, Number* x,
+bool IPOPTForCPDLinearAligner::get_starting_point(Index n, bool init_x, Number* x,
                                             bool init_z, Number* z_L,
                                             Number* z_U, Index m,
                                             bool init_lambda, Number* lambda) {
@@ -160,7 +162,7 @@ bool IPOPTForRigidAlign::get_starting_point(Index n, bool init_x, Number* x,
 }
 
 // returns the value of the objective function
-bool IPOPTForRigidAlign::eval_f(Index n, const Number* x, bool new_x,
+bool IPOPTForCPDLinearAligner::eval_f(Index n, const Number* x, bool new_x,
                                 Number& obj_value) {
     assert(n == 4);
 
@@ -172,7 +174,7 @@ bool IPOPTForRigidAlign::eval_f(Index n, const Number* x, bool new_x,
 }
 
 // return the gradient of the objective function grad_{x} f(x)
-bool IPOPTForRigidAlign::eval_grad_f(Index n, const Number* x, bool new_x,
+bool IPOPTForCPDLinearAligner::eval_grad_f(Index n, const Number* x, bool new_x,
                                      Number* grad_f) {
     assert(n == 4);
     McDVector<double> xVec;
@@ -184,7 +186,7 @@ bool IPOPTForRigidAlign::eval_grad_f(Index n, const Number* x, bool new_x,
 }
 
 // return the value of the constraints: g(x)
-bool IPOPTForRigidAlign::eval_g(Index n, const Number* x, bool new_x, Index m,
+bool IPOPTForCPDLinearAligner::eval_g(Index n, const Number* x, bool new_x, Index m,
                                 Number* g) {
     assert(n == 4);
     assert(m == 0);
@@ -193,7 +195,7 @@ bool IPOPTForRigidAlign::eval_g(Index n, const Number* x, bool new_x, Index m,
 }
 
 // return the structure or values of the jacobian
-bool IPOPTForRigidAlign::eval_jac_g(Index n, const Number* x, bool new_x,
+bool IPOPTForCPDLinearAligner::eval_jac_g(Index n, const Number* x, bool new_x,
                                     Index m, Index nele_jac, Index* iRow,
                                     Index* jCol, Number* values) {
 
@@ -201,7 +203,7 @@ bool IPOPTForRigidAlign::eval_jac_g(Index n, const Number* x, bool new_x,
 }
 
 // return the structure or values of the hessian
-bool IPOPTForRigidAlign::eval_h(Index n, const Number* x, bool new_x,
+bool IPOPTForCPDLinearAligner::eval_h(Index n, const Number* x, bool new_x,
                                 Number obj_factor, Index m,
                                 const Number* lambda, bool new_lambda,
                                 Index nele_hess, Index* iRow, Index* jCol,
@@ -245,7 +247,7 @@ bool IPOPTForRigidAlign::eval_h(Index n, const Number* x, bool new_x,
     return true;
 }
 
-void IPOPTForRigidAlign::finalize_solution(
+void IPOPTForCPDLinearAligner::finalize_solution(
     SolverReturn status, Index n, const Number* x, const Number* z_L,
     const Number* z_U, Index m, const Number* g, const Number* lambda,
     Number obj_value, const IpoptData* ip_data,

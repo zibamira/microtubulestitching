@@ -2,7 +2,11 @@
 
 #include <mclib/McDMatrix.h>
 
-class DerivativesForRigidRegistration {
+namespace mtalign {
+
+/// `CPDLinearAlignerDerivatives` implements the Q derivatives (see supporting
+/// information [Weber 2014]) and is used internally by `CPDLinearAligner`.
+class CPDLinearAlignerDerivatives {
   public:
     McDMatrix<double> A, BT, C, DT, E;
     double s;
@@ -194,3 +198,5 @@ class DerivativesForRigidRegistration {
         hessian[3][3] = dSigmaSquaredSigmaSquare();
     }
 };
+
+}  // namespace mtalign
