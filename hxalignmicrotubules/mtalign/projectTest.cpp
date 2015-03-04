@@ -35,7 +35,7 @@ static ma::EndPointParams makeParams() {
     params.endPointRegion = 40;
 
     // From GUI 'Use absolute value'.
-    params.useAbsouteValueForEndPointRegion = false;
+    params.useAbsoluteValueForEndPointRegion = false;
 
     // From GUI 'Projection' (String) mapped to enum.
     params.projectionType = ma::P_ORTHOGONAL;
@@ -94,7 +94,7 @@ static void expectSha1(const McDArray<McVec3f>& arr, const char* sha1) {
     EXPECT_THAT(&arr[0][0], ht::EqArray3Sha1<float>(dims, sha1));
 }
 
-TEST_P(mtalign__projectTestWithTestingData, computesBaseline) {
+TEST_P(mtalign__projectTestWithTestingData, computesBaseline_E6MS) {
     TestingDevNullRedirect silentout(stdout);
     TestingDevNullRedirect silenterr(stderr);
     Expectation e = GetParam();

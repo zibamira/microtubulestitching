@@ -1,21 +1,29 @@
 #pragma once
 
-#include <mclib/McVec2i.h>
-#include <mclib/McVec3f.h>
+#include <boost/function.hpp>
+
 #include <mclib/McDArray.h>
 #include <mclib/McDMatrix.h>
+#include <mclib/McVec2i.h>
+#include <mclib/McVec3f.h>
 
+#include <hxalignmicrotubules/mtalign/Context.h>
 #include <hxalignmicrotubules/mtalign/cpd.h>
 
 namespace mtalign {
 
 /// `CPDLinearAligner` implements the linear alignment algorithms from [Weber
 /// 2014].
+///
+/// A `Context` can be used to configure the run-time environment used for
+/// printing.  The default is to print to stdout.
 class CPDLinearAligner {
   public:
-    /// `CPDLinearAligner` constructs an aligner with default parameters.  It
-    /// is unclear whether they are useful.
+    ///
     CPDLinearAligner();
+
+    /// `setContext()` configures the run-time environment.
+    void setContext(Context* ctx);
 
     /// `setPoints()` sets the points with directions to be aligned.
     void setPoints(const mtalign::FacingPointSets& points);
@@ -76,14 +84,19 @@ class CPDLinearAligner {
     static void getHat(const McDMatrix<double>& X, const McDMatrix<double>& muX,
                        McDMatrix<double>& XHat);
 
-    static void computeT(const McDMatrix<double>& muX, const double s,
-                         const McDMatrix<double>& R,
-                         const McDMatrix<double>& muY, McDVector<double>&);
+    void computeT(const McDMatrix<double>& muX, const double s,
+                  const McDMatrix<double>& R, const McDMatrix<double>& muY,
+                  McDVector<double>&);
 
   private:
     /// `normalize()` transforms the `Xc` and `Yc` into a standard coordinate
     /// system.
     void normalize();
+
+    /// `print()` is used for printing via the `Context`.
+    void print(QString msg);
+
+    Context* mContext;
 };
 
 /// `CPDLinearAlignerTerms` is used internally.  It implements some more
@@ -107,11 +120,12 @@ class CPDLinearAlignerTerms {
                               const double NP) const;
 
     bool computeKappa(const McDMatrix<double>& Rd, const double NP,
-                      double& kappa) const;
+                      double& kappa, Context::print_t& print) const;
 
     bool optimizeParameters(McDMatrix<double>& R, double& s,
                             double& sigmaSquare, double& kappa, const double Np,
-                            const bool withScaling) const;
+                            const bool withScaling,
+                            Context::print_t& print) const;
 
   private:
     McDMatrix<double> XcHatT_x_dPT1_x_XcHat;

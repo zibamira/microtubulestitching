@@ -53,10 +53,10 @@ class HxCPDSpatialGraphWarpTest : public ::testing::Test {
 
 TEST_F_LINUX(HxCPDSpatialGraphWarpTest, computesBaselineElastic_E5MS) {
     cpd->portMethod.setValue(2);
-    expectComputesSha1("0838c0e54da1be23a078de0fd2a5f429356a16bd");
+    expectComputesSha1("edff0ccb0796506a1585068bc0b5b9376a50275b");
 }
 
 TEST_F_LINUX(HxCPDSpatialGraphWarpTest, computesBaselineRigidFisherMises_E5MS) {
     cpd->portMethod.setValue(3);
-    expectComputesSha1("59f9b3d429694afbe1752a2e0e23f370e8c97155");
+    expectComputesSha1("b3590bc0f4ae16f0f574420d602deaaedc0a857f");
 }

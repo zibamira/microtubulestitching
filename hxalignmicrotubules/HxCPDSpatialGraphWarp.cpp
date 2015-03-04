@@ -157,7 +157,7 @@ void HxCPDSpatialGraphWarp::preparePoints(McDArray<McVec3f>& p1,
     params.projectionType = ma::P_ORTHOGONAL;
     params.refSliceNum = 0;
     params.transSliceNum = 1;
-    params.useAbsouteValueForEndPointRegion = false;
+    params.useAbsoluteValueForEndPointRegion = false;
     params.maxDistForAngle = 2000;
     params.angleToPlaneFilter = 0.01;
     SpatialGraphSelection slice1;
@@ -194,7 +194,7 @@ void HxCPDSpatialGraphWarp::preparePointsAndDirections(
     params.projectionType = ma::P_ORTHOGONAL;
     params.refSliceNum = 0;
     params.transSliceNum = 1;
-    params.useAbsouteValueForEndPointRegion = false;
+    params.useAbsoluteValueForEndPointRegion = false;
     params.maxDistForAngle = 2000;
     params.angleToPlaneFilter = 0.01;
     SpatialGraphSelection slice1;
@@ -237,7 +237,7 @@ void HxCPDSpatialGraphWarp::preparePointsAndDirectionsRigid(
     params.projectionType = ma::P_ORTHOGONAL;
     params.refSliceNum = 0;
     params.transSliceNum = 1;
-    params.useAbsouteValueForEndPointRegion = false;
+    params.useAbsoluteValueForEndPointRegion = false;
     params.maxDistForAngle = 2000;
     params.angleToPlaneFilter = 0.01;
     SpatialGraphSelection slice1;
@@ -474,6 +474,7 @@ void HxCPDSpatialGraphWarp::applyNLDeformationToSlice(
         McVec3f curCoordWarped;
         warpPoint(curCoord, curCoordWarped, mls);
         spatialGraph->setVertexCoords(curVertex, curCoordWarped);
+        // Add new segments that indicate shift.
         if (slice.isSelectedVertex(curVertex)) {
             int newVertex = spatialGraph->addVertex(curCoord);
             McDArray<McVec3f> edgePoints(2);

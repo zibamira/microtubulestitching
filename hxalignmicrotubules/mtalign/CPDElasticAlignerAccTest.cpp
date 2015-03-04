@@ -33,7 +33,7 @@ static ma::EndPointParams makeEndPointParams(int refSliceNum, int transSliceNum,
     params.endPointRegion = 40;
 
     // From GUI 'Use absolute value'.
-    params.useAbsouteValueForEndPointRegion = false;
+    params.useAbsoluteValueForEndPointRegion = false;
 
     // From GUI 'Projection' (String).
     params.projectionType = ma::P_ORTHOGONAL;
@@ -51,10 +51,18 @@ static ma::EndPointParams makeEndPointParams(int refSliceNum, int transSliceNum,
     return params;
 }
 
-static void dontPrint(const char* msg) {
+static void testingPrint(QString msg) {
     // Use the following line to temporarily enable printing.
-    // printf("%s", msg);
+    // puts(qPrintable(msg));
 }
+
+static ma::Context makeTestingContext() {
+    ma::Context ctx;
+    ctx.print = &testingPrint;
+    return ctx;
+}
+
+static ma::Context testingContext = makeTestingContext();
 
 // Restrict test to Linux, because sha1 on Windows differs.
 TEST_LINUX(mtalign__CPDElasticAlignerAccTest, shouldComputeKnownResult_E5MS) {
@@ -75,7 +83,7 @@ TEST_LINUX(mtalign__CPDElasticAlignerAccTest, shouldComputeKnownResult_E5MS) {
 
     // Configure cpd params.
     mtalign::CPDElasticAligner cpd;
-    cpd.setPrint(dontPrint);
+    cpd.setContext(&testingContext);;
     cpd.params.beta = 10;
     cpd.params.lambda = 1;
     cpd.params.w = 0.1;

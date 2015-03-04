@@ -48,15 +48,52 @@ enum ProjectionType {
 
 /// `EndPointParams` specifies how endpoints on sections boundaries are
 /// extracted from a spatial graph stack.
+///
+/// The slice numbers `refSliceNum` and `transSliceNum` are zero-based.
+/// `projectionPlane` specifies the z-value of the target xy-plane.  It is
+/// usually computed with `SliceSelector::computeMidPlane()`.  `endPointRegion`
+/// specifies the region to be projected either as a percentage of the slice
+/// thickness (if `useAbsoluteValueForEndPointRegion` is `false`) or in absolute
+/// physical units (if `useAbsoluteValueForEndPointRegion` is `true`).  Use
+/// `projectionType = P_ORTHOGONAL` to get the projection as described in the
+/// [Weber 2014].
+///
+/// `maxDistForAngle` limits the distance (in physical units) between the
+/// boundary point and a second point on the line that is used in
+/// `projectEndPoints()` for computing the `DirectionalPoints::directions`.
+///
+/// `angleToPlaneFilter` controls which lines are rejected during the
+/// projection.  Lines are rejected if their direction points towards the
+/// midplane instead of the section center; or if the direction points towards
+/// the section center, but the angle with the boundary plane is less than
+/// `angleToPlaneFilter * 180 degrees`.  A larger `angleToPlaneFilter` rejects
+/// more lines.
+///
+/// `numMaxPointsForInitTransform` limits the number of points returned by
+/// `projectEndPointsSubset()`.  Points whose associated direction is more
+/// perpendicular to the boundary are preferred over points whose associated
+/// direction is more parallel.
 struct EndPointParams {
+    EndPointParams() {
+        refSliceNum = 0;
+        transSliceNum = 1;
+        projectionPlane = 0.0;
+        useAbsoluteValueForEndPointRegion = false;
+        endPointRegion = 40;
+        projectionType = P_ORTHOGONAL;
+        angleToPlaneFilter = 0.01;
+        maxDistForAngle = 2000;
+        numMaxPointsForInitTransform = 50;
+    }
+
     int refSliceNum;
     int transSliceNum;
+    float projectionPlane;
+    bool useAbsoluteValueForEndPointRegion;
     float endPointRegion;
     ProjectionType projectionType;
-    float projectionPlane;
     float angleToPlaneFilter;
     float maxDistForAngle;
-    bool useAbsouteValueForEndPointRegion;
     int numMaxPointsForInitTransform;
 };
 

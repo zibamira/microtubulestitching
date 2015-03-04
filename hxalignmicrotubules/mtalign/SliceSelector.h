@@ -15,10 +15,12 @@ struct MinMax {
 };
 
 /// `SliceSelector` partitions a spatial graph into slices based on an
-/// attribute and provides functions to compute properties of the slices.  The
-/// attribute is expected to fulfill `isOrderedAttribute()`, that is nodes are
-/// grouped by attribute value if visited in index order.  Slices indexes start
-/// at 0.
+/// attribute and provides functions to compute properties of the slices.
+///
+/// The attribute is expected to fulfill `isOrderedAttribute()`, that is nodes
+/// are grouped by attribute value if visited in index order.  Slices indexes
+/// start at 0.  Slices consist of vertices and complete edges.  `getSlice()`
+/// will never select individual points.
 class SliceSelector {
   public:
     /// `SliceSelector()` initializes an invalid object.
@@ -45,8 +47,9 @@ class SliceSelector {
     /// `getSliceIdxOfVertex()` returns the zero-based slice index for a node.
     int getSliceIdxOfVertex(const int vertexIdx) const;
 
-    /// `getSlice()` selects the nodes for `attrValue` in the output selection
-    /// `slice`.
+    /// `getSlice()` selects the nodes and edges for `attrValue` in the output
+    /// selection `slice`.  The output selection contains no individual points:
+    /// `slice.getNumSelectedPoints() == 0`.
     void getSlice(const int attrValue, SpatialGraphSelection& slice) const;
 
     /// `getZRange()` computes the z-range of the nodes selected in `sel`.

@@ -7,6 +7,8 @@
 
 namespace mtalign {
 
+struct Context;
+
 struct DirectionalPoints;
 struct FacingPointSets;
 
@@ -28,30 +30,49 @@ enum CPDType {
 
 /// `AlignParams` contains the parameters that are common to the coherent point
 /// drift algorithms.
+///
+/// See supplementary figures 1 to 3 of [Weber 2014].  `w` controls the weight of
+/// the outlier term.   `useDirections` controls whether the directions are
+/// used.  The remaining parameters `maxIterations`, `eDiffRelStop`, and
+/// `sigmaSquareStop` control the termination of the EM algorithms.
 struct AlignParams {
+    // No ctor, because it would be incompatible with the union in `CPDParams`.
     double w;
+    bool useDirections;
     int maxIterations;
     float eDiffRelStop;
     float sigmaSquareStop;
-    bool useDirections;
+};
+
+/// `AlignParamsLinear` contains additional parameters for `cpdLinear()`.
+///
+/// `usePositions` controls whether the endpoint positions are used.
+/// `withScaling` controls whether the transformation includes uniform scaling.
+struct AlignParamsLinear : public AlignParams {
+    bool usePositions;
+    bool withScaling;
 };
 
 /// `AlignParamsElastic` contains additional parameters for `cpdElastic()`.
+///
+/// `lambda` and `beta` control the CPD algorithm (see supplementary figure 3
+/// of [Weber 2014]).
+///
+/// `sampleDistForWarpingLandmarks` specifies the minimal distance between
+/// landmarks in the output.  If two landmarks are closer than the distance,
+/// one of the two will be removed.  Use `sampleDistForWarpingLandmarks=0` to
+/// disable subsampling.
 struct AlignParamsElastic : public AlignParams {
     double lambda;
     double beta;
     float sampleDistForWarpingLandmarks;
 };
 
-/// `AlignParamsLinear` contains additional parameters for
-/// `cpdLinear()`.
-struct AlignParamsLinear : public AlignParams {
-    bool usePositions;
-    bool withScaling;
-};
-
-/// `CPDParams` controls the parameters of the coherent point drift
-/// algorithms (functions `cpd*()`).
+/// `CPDParams` controls the parameters of the coherent point drift algorithms
+/// (functions `cpd*()`).
+///
+/// Use `defaultsLinear()` or `defaultsElastic()` to get reasonable defaults as
+/// used for [Weber 2014].
 struct CPDParams {
     CPDType type;
 
@@ -72,6 +93,37 @@ struct CPDParams {
     /// considered unreliable.  If `WarpResult::sigmaSquare` is greater than
     /// the threshold, the transformation should be ignored.
     float maxAcceptableSigmaSquare;
+
+    static CPDParams defaultsLinear() {
+        CPDParams p;
+        p.type = CPD_LINEAR;
+        p.linear.w = 0.1;
+        p.linear.maxIterations = 200;
+        p.linear.eDiffRelStop = 1.e-5f;
+        p.linear.sigmaSquareStop = 1.e-7f;
+        p.linear.useDirections = true;
+        p.linear.usePositions = true;
+        p.linear.withScaling = true;
+        p.alphaForMLS = 2;
+        p.maxAcceptableSigmaSquare = 0;
+        return p;
+    }
+
+    static CPDParams defaultsElastic() {
+        CPDParams p;
+        p.type = CPD_LINEAR;
+        p.elastic.w = 0.1;
+        p.elastic.maxIterations = 200;
+        p.elastic.eDiffRelStop = 1.e-5f;
+        p.elastic.sigmaSquareStop = 1.e-7f;
+        p.elastic.useDirections = true;
+        p.elastic.lambda = 1;
+        p.elastic.beta = 10;
+        p.elastic.sampleDistForWarpingLandmarks = 0;
+        p.alphaForMLS = 2;
+        p.maxAcceptableSigmaSquare = 0;
+        return p;
+    }
 };
 
 /// `AlignInfo` is used to return information about the convergence of the
@@ -104,12 +156,24 @@ struct MLSParams {
     McDArray<McVec2d> qs;
 };
 
+/// `WarpType` enumerates the possible transformation types in `WarpResult`.
+/// The integer values should be kept for backward compatibility.
+enum WarpType {
+    WT_LINEAR = 0,
+    WT_ELASTIC = 1
+};
+
 /// `WarpResult` is returned by the coherent point drift functions (`cpd()` and
 /// variants).
 struct WarpResult {
-    int type;  // 0 if transform matrix, 1 if MLS.
-    MLSParams mlsParams;
+    WarpType type;
+
+    /// Only used when `type == WT_LINEAR`.
     McMat4f transformMatrix;
+
+    /// Only used when `type == WT_ELASTIC`.
+    MLSParams mlsParams;
+
     int refSlice;
     int transSlice;
     AlignInfo alignInfo;
@@ -119,18 +183,18 @@ struct WarpResult {
 /// rigid deformation model.  It takes the position of the `points` and their
 /// direction into account.  The direction distribution is modeled as a
 /// Fisher-Mises distribution.
-void cpdLinear(const FacingPointSets& points, const CPDParams& params,
-               WarpResult& warpResult);
+void cpdLinear(const FacingPointSets& points, WarpResult& warpResult,
+               const CPDParams& params, Context* ctx = 0);
 
 /// `cpdElastic()` applies the coherent point drift algorithm with an elastic
 /// deformation model.  It takes the position of the `points` and their
 /// direction into account.
-void cpdElastic(const FacingPointSets& points, const CPDParams& params,
-                WarpResult& warpResult);
+void cpdElastic(const FacingPointSets& points, WarpResult& warpResult,
+                const CPDParams& params, Context* ctx = 0);
 
 /// `cpd()` dispatches to the appropriate coherent point drift algorithm based
 /// on the `CPDType` stored in `params.type`.
-void cpd(const FacingPointSets& points, const CPDParams& params,
-         WarpResult& warpResult);
+void cpd(const FacingPointSets& points, WarpResult& warpResult,
+         const CPDParams& params, Context* ctx = 0);
 
 }  // namespace mtalign

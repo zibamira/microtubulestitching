@@ -1,9 +1,11 @@
 #pragma once
 
-#include <mclib/McDArray.h>
-#include <mclib/McDMatrix.h>
 #include <boost/function.hpp>
 
+#include <mclib/McDArray.h>
+#include <mclib/McDMatrix.h>
+
+#include <hxalignmicrotubules/mtalign/Context.h>
 #include <hxalignmicrotubules/mtalign/cpd.h>
 #include <hxalignmicrotubules/mtalign/data.h>
 
@@ -16,16 +18,16 @@ namespace mtalign {
 /// directly by `HxCPDSpatialGraphWarp`, which is kept for backward
 /// compatibility with the supplementary data to [Weber 2014].  Future clients
 /// should not use `CPDElasticAligner` but instead call `cpd()`.
+///
+/// A `Context` can be used to configure the run-time environment used for
+/// printing.  The default is to print to stdout.
 class CPDElasticAligner {
   public:
     ///
     CPDElasticAligner();
 
-    /// `print_t` is the type of a low-level printer function.
-    typedef boost::function<void (const char*)> print_t;
-
-    /// `setPrint()` set the function used for low-level printing.
-    void setPrint(print_t print);
+    /// `setContext()` configures the run-time environment.
+    void setContext(Context* ctx);
 
     /// `setPoints()` set the point sets that are used in `align()`.
     void setPoints(const mtalign::FacingPointSets& points);
@@ -95,11 +97,10 @@ class CPDElasticAligner {
     /// system.  The `oldYs` are modified in place.
     void rescaleYs(McDMatrix<double>& oldYs) const;
 
-    /// `print()` is used for printing and can be configured with `setPrint()`.
+    /// `print()` is used for printing via the `Context`.
     void print(QString msg);
 
-    /// `mPrint` is the low-level printer function.
-    print_t mPrint;
+    Context* mContext;
 
     /// `computeKappa()` calls Newton's method for computing kappa.  It is a
     /// members as all related functions, because they use `print()`.

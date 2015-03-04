@@ -25,9 +25,17 @@ ma::PGMMatcher::PGMMatcher(const McDArray<McVec3f>& coords1,
       mDirections2(directions2),
       mEvidence(evidence),
       mShiftProbParam(shiftProbParam),
-      mWeightComputationFunction(weightComputationFunction) {}
+      mWeightComputationFunction(weightComputationFunction) {
+    mContext = &defaultContext();
+}
 
-ma::PGMMatcher::~PGMMatcher() {}
+void ma::PGMMatcher::print(QString msg) {
+    mContext->print(msg);
+}
+
+void ma::PGMMatcher::setContext(ma::Context* ctx) {
+    mContext = ctx;
+}
 
 void ma::PGMMatcher::createVariableAssignmentMat() {
     mVariableAssignmentMat.resize(mCoords1.size(), mCoords2.size());
@@ -275,18 +283,22 @@ ma::PGMMatcher::createSingletonFactors(const McDArray<int>& connectedComp,
 void ma::PGMMatcher::handleEvidenceAssignment(const int varLabel,
                                               const int errorCode,
                                               int assignemtnIndexInWholeModel) {
-    if (errorCode > -2)
+    if (errorCode > -2) {
         return;
-
-    if (errorCode == -2)
-        cout << "\nVariable with label " << varLabel
-             << " was assigned to assignment " << assignemtnIndexInWholeModel
-             << " but it these two are not in the same connected component!";
-    if (errorCode == -3)
-        cout << "\nVariable with label " << varLabel
-             << " was assigned to assignment " << assignemtnIndexInWholeModel
-             << " but this conflicts with another assignment - pair factors "
-                "not OK!";
+    } else if (errorCode == -2) {
+        print(QString(
+                  "Variable with label %1 was assigned to assignment %2 "
+                  "but it these two are not in the same connected component!")
+                  .arg(varLabel)
+                  .arg(assignemtnIndexInWholeModel));
+    } else if (errorCode == -3) {
+        print(QString(
+                  "Variable with label %1 was assigned to assignment %2 "
+                  "but this conflicts with another assignment - pair factors "
+                  "not OK!")
+                  .arg(varLabel)
+                  .arg(assignemtnIndexInWholeModel));
+    }
 
     mQueerEvidence.append(McVec2i(varLabel, assignemtnIndexInWholeModel));
 }
@@ -632,8 +644,9 @@ bool ma::PGMMatcher::matchPoints(
 
     mculong maxNumberOfAssignmentsForExactInference = 1.e6;
 
-    cout << "\n Graph has " << graph.factors.size() << " factors and "
-         << graph.variables.size() << "variables";
+    print(QString("Graph has %1 factors and %2 variables")
+              .arg(graph.factors.size())
+              .arg(graph.variables.size()));
     mculong numAssignments = 1;
     McDArray<int> possibleAssignments;
     for (int i = 0;
@@ -646,10 +659,11 @@ bool ma::PGMMatcher::matchPoints(
     }
     bool useExactInf = numAssignments < maxNumberOfAssignmentsForExactInference;
     if (useExactInf) {
-        // cout << "\n PD has "<< numAssignments << " assignments \n";
-    } else
-        cout << "\n PD has more than "
-             << maxNumberOfAssignmentsForExactInference << " assignments \n";
+        ;
+    } else {
+        print(QString("PD has more than %1 assignments")
+                  .arg(maxNumberOfAssignmentsForExactInference));
+    }
 
     PropertySet opts;
     opts.set("tol", (Real)maxDiff);
@@ -667,10 +681,10 @@ bool ma::PGMMatcher::matchPoints(
     DAIAlgFG* infAlgorithm;
 
     if (useExactInf) {
-        cout << "Running exact inference...";
+        print("Running exact inference...");
         infAlgorithm = new ExactInf(fg, opts);
     } else {
-        cout << "Running belief propagation...";
+        print("Running belief propagation...");
         infAlgorithm = new BP(fg, opts);
     }
     infAlgorithm->init();
@@ -778,7 +792,7 @@ void ma::PGMMatcher::getMaxProbAssignments(const DAIAlgFG* ia,
         }
 
     } catch (Exception e) {
-        cout << e.getDetailedMsg();
+        print(e.getDetailedMsg().c_str());
 
         for (int i = 0; i < graph.variables.size(); i++) {
 
@@ -819,11 +833,10 @@ ma::PGMMatcher::outputSingleFactorValues(const ConnectedFactorGraph& graph) {
         Factor fac = graph.factors[j];
         if (fac.vars().size() != 1)
             continue;
-        cout << "singvals for var " << fac.vars().front().label() << " :\n";
+        print(QString("singvals for var %1:").arg(fac.vars().front().label()));
         for (int k = 0; k < fac.nrStates(); k++) {
-            cout << fac.get(k) << " ";
+            print(QString("%1").arg(fac.get(k)));
         }
-        cout << "\n";
     }
 }
 
@@ -835,14 +848,15 @@ ma::PGMMatcher::outputDoubleFactorValues(const ConnectedFactorGraph& graph) {
         Factor fac = graph.factors[j];
         if (fac.vars().size() != 2)
             continue;
-        cout << "\nPotentials for vars " << fac.vars().front().label() << " - "
-             << fac.vars().back().label() << "\n";
+        print(QString("Potentials for vars %1 - %2")
+                  .arg(fac.vars().front().label())
+                  .arg(fac.vars().back().label()));
         for (int k = 0; k < fac.vars().front().states(); k++) {
 
             for (int l = 0; l < fac.vars().front().states(); l++) {
-                cout << fac.get(k * fac.vars().front().states() + l) << " ";
+                print(QString("%1")
+                          .arg(fac.get(k * fac.vars().front().states() + l)));
             }
-            cout << "\n";
         }
     }
 }
@@ -881,30 +895,18 @@ void ma::PGMMatcher::checkAmbiguities(const DAIAlgFG* ia, const FactorGraph& fg,
                 countSame++;
         }
 
-        /////
-        /*cout << "\n Belief for var "<< graph.variables[h] <<"\n";
-        for (int k=0;k<possibleAssignments.size()+1; k++)
-        {
-              float curProb = belief.get(k);
-              cout << curProb <<" ";
-        }
-        cout <<"\n";*/
-
-        ////
-
         if (countSame > 1) {
-            // oh no! We found an ambiguos assignment!
+            // oh no! We found an ambiguous assignment!
 
             ambiguities.append(graph.variables[h]);
 
             // print it out:
-            cout << "Found an ambiguous assignemnt to variable "
-                 << graph.variables[h] << "\n";
+            print(QString("Found an ambiguous assignment to variable %1")
+                      .arg(graph.variables[h]));
             for (int k = 0; k < possibleAssignments.size() + 1; k++) {
                 float curProb = belief.get(k);
-                cout << curProb << " ";
+                print(QString("%1").arg(curProb));
             }
-            cout << "\n";
         }
     }
 }

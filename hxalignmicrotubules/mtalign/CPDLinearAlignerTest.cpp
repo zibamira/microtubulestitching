@@ -404,7 +404,7 @@ class mtalign__CPDLinearAlignerTest : public ::testing::Test,
 };
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDScaledAndRotated_CheckConvergesR_E3MS) {
+       givenTestCPDScaledAndRotated_CheckConvergesR_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     double rho = 1.8;
@@ -431,7 +431,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDScaledAndRotated_CheckAlignVMCoupledRsRunsR_E3MS) {
+       givenTestCPDScaledAndRotated_CheckAlignVMCoupledRsRunsR_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     double rho = 2.0;
@@ -458,7 +458,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDOnlyScaled_CheckUncoupledConvergesRunsR_E3MS) {
+       givenTestCPDOnlyScaled_CheckUncoupledConvergesRunsR_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMScaledAndRotated(10.0, 0.5);
@@ -486,7 +486,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDOnlyScaled_CheckConverges1R_E3MS) {
+       givenTestCPDOnlyScaled_CheckConverges1R_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMScaledAndRotated(1.0, 0.0);
@@ -514,7 +514,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDRotAndScaled_CheckConverges2R_E3MS) {
+       givenTestCPDRotAndScaled_CheckConverges2R_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMScaledAndRotated(1.0, 0.6);
@@ -542,7 +542,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDOnlyRotated_CheckConverges3R_E3MS) {
+       givenTestCPDOnlyRotated_CheckConverges3R_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMOnlyRotated(0.5);
@@ -572,7 +572,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDOnlyScaled_CheckConverges8R_E3MS) {
+       givenTestCPDOnlyScaled_CheckConverges8R_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMOnlyScaled(10.0);
@@ -601,7 +601,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDOnlyScaled_CheckConverges4R_E3MS) {
+       givenTestCPDOnlyScaled_CheckConverges4R_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMOnlyScaled(1.0);
@@ -629,7 +629,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPDOnlyRotated_CheckAlignVMCoupledRsRunsR_E3MS) {
+       givenTestCPDOnlyRotated_CheckAlignVMCoupledRsRunsR_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMOnlyRotated(0.3);
@@ -654,7 +654,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
     }
 }
 
-TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD1_CheckAlignVMRunsR_E3MS) {
+TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD1_CheckAlignVMRunsR_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdataVMRotated();
@@ -701,7 +701,7 @@ TEST_F(mtalign__CPDLinearAlignerTest,
 }
 
 TEST_F(mtalign__CPDLinearAlignerTest,
-       givenTestCPD2Rotated_CheckAlignRunsR_E3MS) {
+       givenTestCPD2Rotated_CheckAlignRunsR_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdata2Rotated();
@@ -930,7 +930,7 @@ TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD1NoDir_CheckAlignRunsR_E3MS) {
     }
 }
 
-TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD2_CheckAlignRunsR_E3MS) {
+TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD2_CheckAlignRunsR_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdata2();
@@ -949,7 +949,7 @@ TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD2_CheckAlignRunsR_E3MS) {
     }
 }
 
-TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD1_CheckAlignRunsR_E3MS) {
+TEST_F(mtalign__CPDLinearAlignerTest, givenTestCPD1_CheckAlignRunsR_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     initCPDdata1();

@@ -1,18 +1,19 @@
 #include <hxalignmicrotubules/mtalign/cpd.h>
 
-#include <iostream>
+#include <QString>
 
 #include <mclib/McException.h>
 
 #include <hxalignmicrotubules/mtalign/CPDElasticAligner.h>
 #include <hxalignmicrotubules/mtalign/CPDLinearAligner.h>
+#include <hxalignmicrotubules/mtalign/Context.h>
 #include <hxalignmicrotubules/mtalign/data.h>
 
 namespace ma = mtalign;
 
 // `resamplePairs()` removes points that are closer than `sampleDist` in `p1`.
-// The corresponding points are removed from `p2`.  The two arrays are required
-// to have the same size.
+// The corresponding points are also removed from `p2`.  The two arrays are
+// required to have the same size.
 static void resamplePairs(McDArray<McVec3f>& p1, McDArray<McVec3f>& p2,
                           const float sampleDist) {
     mcrequire(p1.size() == p2.size());
@@ -32,8 +33,6 @@ static void resamplePairs(McDArray<McVec3f>& p1, McDArray<McVec3f>& p2,
         if (resetI)
             i = p1.size() - 1;
     }
-    std::cout << "\n" << p1.size() << " point from " << numPairs
-              << " left after resampling.";
 }
 
 static McDArray<McVec2d> asVec2dArray(const McDArray<McVec3f>& a) {
@@ -47,10 +46,13 @@ static McDArray<McVec2d> asVec2dArray(const McDArray<McVec3f>& a) {
 }
 
 void ma::cpdElastic(const ma::FacingPointSets& points,
-                    const ma::CPDParams& params, ma::WarpResult& warpResult) {
-
-    // Configure cpd.
+                    ma::WarpResult& warpResult, const ma::CPDParams& params,
+                    ma::Context* ctx) {
+    if (!ctx) {
+        ctx = &defaultContext();
+    }
     CPDElasticAligner cpd;
+    cpd.setContext(ctx);
     cpd.params = params.elastic;
 
     if (params.elastic.useDirections) {
@@ -68,8 +70,13 @@ void ma::cpdElastic(const ma::FacingPointSets& points,
     McDArray<McVec3f> transCoords = cpd.align(info);
 
     McDArray<McVec3f> origCoords = points.trans.positions;
+    const int nbefore = origCoords.size();
     resamplePairs(origCoords, transCoords,
                   params.elastic.sampleDistForWarpingLandmarks);
+    ctx->print(QString("%1 of %2 points left after resampling.")
+                   .arg(nbefore)
+                   .arg(origCoords.size()));
+    warpResult.type = WT_ELASTIC;
     warpResult.mlsParams.alpha = params.alphaForMLS;
     warpResult.mlsParams.ps = asVec2dArray(origCoords);
     warpResult.mlsParams.qs = asVec2dArray(transCoords);
@@ -77,10 +84,15 @@ void ma::cpdElastic(const ma::FacingPointSets& points,
 }
 
 void ma::cpdLinear(const ma::FacingPointSets& points,
-                   const ma::CPDParams& params, ma::WarpResult& warpResult) {
+                   ma::WarpResult& warpResult, const ma::CPDParams& params,
+                   ma::Context* ctx) {
+    if (!ctx) {
+        ctx = &defaultContext();
+    }
     McDMatrix<double> refCoordsM, transCoordsM;
 
     CPDLinearAligner cpd;
+    cpd.setContext(ctx);
     cpd.params = params.linear;
 
     if (params.linear.useDirections) {
@@ -97,16 +109,17 @@ void ma::cpdLinear(const ma::FacingPointSets& points,
     McDVector<double> t;
     double s;
     const AlignInfo info = cpd.align(R, s, t, Rd);
+    warpResult.type = WT_LINEAR;
     warpResult.transformMatrix = cpd.getTransformMat4f(R, s, t);
     warpResult.alignInfo = info;
 }
 
-void ma::cpd(const ma::FacingPointSets& points, const ma::CPDParams& params,
-             ma::WarpResult& warpResult) {
+void ma::cpd(const ma::FacingPointSets& points, ma::WarpResult& warpResult,
+             const ma::CPDParams& params, ma::Context* ctx) {
     if (params.type == CPD_LINEAR) {
-        cpdLinear(points, params, warpResult);
+        cpdLinear(points, warpResult, params, ctx);
     } else if (params.type == CPD_ELASTIC) {
-        cpdElastic(points, params, warpResult);
+        cpdElastic(points, warpResult, params, ctx);
     } else {
         mcthrow("CPDType not implemented!");
     }

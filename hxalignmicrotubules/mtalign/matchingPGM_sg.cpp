@@ -303,24 +303,28 @@ McDArray<McVec2i> remapIndices(const McDArray<McVec2i>& pairs,
     return r;
 }
 
-static void
-reportEvidenceDetails(const ma::MatchingPGM& res,
-                      const McDArray<McVec2i>& evidence,
-                      const McDArray<int>& refSlicePointsToMatch,
-                      const McDArray<int>& transSlicePointsToMatch) {
+static void reportEvidenceDetails(const ma::MatchingPGM& res,
+                                  const McDArray<McVec2i>& evidence,
+                                  const McDArray<int>& refSlicePointsToMatch,
+                                  const McDArray<int>& transSlicePointsToMatch,
+                                  ma::Context* ctx) {
+    mcrequire(ctx);
     for (int h = 0; h < res.queerEvidence.size(); h++) {
         const McVec2i e = res.queerEvidence[h];
-        std::cout << "WARNING! This evidence does not fit the parameters: "
-                  << refSlicePointsToMatch[e.x] << " "
-                  << transSlicePointsToMatch[e.y] << " (" << e.x << " - " << e.y
-                  << ")\n";
-        std::cout << "Check the queer evidence label and remove evidence that "
-                     "is queer or adjust your parameters.\n";
+        ctx->print(QString("WARNING! This evidence does not fit the "
+                           "parameters: %1 %2 (%3 - %4)")
+                       .arg(refSlicePointsToMatch[e.x])
+                       .arg(transSlicePointsToMatch[e.y])
+                       .arg(e.x)
+                       .arg(e.y));
+        ctx->print("Check the queer evidence label and remove evidence that is "
+                   "queer or adjust your parameters.");
     }
     for (int i = 0; i < evidence.size(); i++) {
-        std::cout << "Evidence pair " << i << " : "
-                  << refSlicePointsToMatch[evidence[i].x] << " - "
-                  << transSlicePointsToMatch[evidence[i].y] << "\n";
+        ctx->print(QString("Evidence pair %1: %2 - %3")
+                       .arg(i)
+                       .arg(refSlicePointsToMatch[evidence[i].x])
+                       .arg(transSlicePointsToMatch[evidence[i].y]));
     }
 }
 
@@ -333,7 +337,11 @@ ma::MatchingPGM
 ma::matchingPGM(const FacingPointSets& pts, MatchingPGMParams mparams,
                 HxSpatialGraph* sg, SpatialGraphSelection& refVertexSelection,
                 SpatialGraphSelection& transVertexSelection,
-                const SpatialGraphSelection& aroundMidPlaneSelection) {
+                const SpatialGraphSelection& aroundMidPlaneSelection,
+                Context* ctx) {
+    if (!ctx) {
+        ctx = &defaultContext();
+    }
 
     clearAttributes(sg, aroundMidPlaneSelection);
 
@@ -351,11 +359,13 @@ ma::matchingPGM(const FacingPointSets& pts, MatchingPGMParams mparams,
     mcassert(ptsWithoutUnassigned.trans.positions.size() ==
              transVertexSelection.getNumSelectedVertices());
 
-    const ma::MatchingPGM matching = matchingPGM(ptsWithoutUnassigned, mparams);
+    const ma::MatchingPGM matching =
+        matchingPGM(ptsWithoutUnassigned, mparams, ctx);
 
     const McDArray<int> refNodeIds = getSelectedNodeIds(refVertexSelection);
     const McDArray<int> transNodeIds = getSelectedNodeIds(transVertexSelection);
-    reportEvidenceDetails(matching, mparams.evidence, refNodeIds, transNodeIds);
+    reportEvidenceDetails(matching, mparams.evidence, refNodeIds, transNodeIds,
+                          ctx);
 
     struct RemapWriter {
         HxSpatialGraph* sg;

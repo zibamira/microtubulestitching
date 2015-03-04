@@ -11,37 +11,38 @@ namespace mtalign {
 /// endpoints.  See paper at <http://dx.doi.org/10.1371/journal.pone.0113222>.
 /// A parameter is ignored if the corresponding `use*` is `false`.
 struct HXALIGNMICROTUBULES_API PGMPairWeightsParams {
-    /// Threshold `t_c` from the paper.
+    /// `distanceThreshold3d` is `t_c` from the paper.
     double distanceThreshold3d;
     bool useDistanceThreshold3d;
 
-    /// Threshold `t_p` from the paper.
+    /// `distanceThresholdProjected` is `t_p` from the paper.
     double distanceThresholdProjected;
     bool useDistanceThresholdProjected;
 
-    /// Threshold `t_alpha` from the paper.
+    /// `angleThreshold` is `t_alpha` from the paper.
     double angleThreshold;
     bool useAngleThreshold;
 
-    /// Inverse weight `lambda_alpha^-1` from the paper when `weightType` is
-    /// `EXPONENTIAL`.
+    /// `angleWeightParam` is the inverse weight `lambda_alpha^-1` from the
+    /// paper when `weightType` is `EXPONENTIAL`.
     double angleWeightParam;
     bool useAngleWeight;
 
-    /// Inverse weight `lambda_c^-1` from the paper when `weightType` is
-    /// `EXPONENTIAL`.
+    /// `dist3dParam` is the inverse weight `lambda_c^-1` from the paper when
+    /// `weightType` is `EXPONENTIAL`.
     double dist3dParam;
     bool useDist3dWeight;
 
-    /// Inverse weight `lambda_p^-1` from the paper when `weightType` is
-    /// `EXPONENTIAL`.
+    /// `distProjectedParam` is the inverse weight `lambda_p^-1` from the paper
+    /// when `weightType` is `EXPONENTIAL`.
     double distProjectedParam;
     bool useProjectedDistWeight;
 
-    /// Placeholder significance parameter `r` from the paper.
+    /// `dummySignificance` is the placeholder significance parameter `r` from
+    /// the paper.
     double dummySignificance;
 
-    /// Use `EXPONENTIAL` for algorithms from the paper.
+    /// Use `weightType = EXPONENTIAL` for the algorithms from the paper.
     enum WeightType { LINEAR = 0, EXPONENTIAL };
     WeightType weightType;
 };

@@ -17,10 +17,18 @@ static void checkSameCoord(const McDVector<double> coord1,
     }
 }
 
-static void dontPrint(const char* msg) {
+static void testingPrint(QString msg) {
     // Use the following line to temporarily enable printing.
-    // printf("%s", msg);
+    // puts(qPrintable(msg));
 }
+
+static ma::Context makeTestingContext() {
+    ma::Context ctx;
+    ctx.print = &testingPrint;
+    return ctx;
+}
+
+static ma::Context testingContext = makeTestingContext();
 
 namespace {
 
@@ -47,7 +55,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
     void givenAssymPoints43_checkRuns_E3MS() {
         CPDElasticAlignerTesting& cpd = *this;
-        cpd.setPrint(dontPrint);
+        cpd.setContext(&testingContext);
         McDArray<McVec3f> xsarray, ysarray;
         xsarray.append(McVec3f(1, 1, 0));
         xsarray.append(McVec3f(2, 2, 0));
@@ -90,7 +98,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
     void givenAssymPoints34_checkRuns_E3MS() {
         CPDElasticAlignerTesting& cpd = *this;
-        cpd.setPrint(dontPrint);
+        cpd.setContext(&testingContext);
         McDArray<McVec3f> xsarray, ysarray;
         cpd.xs.resize(3, 3);
         xsarray.append(McVec3f(1, 1, 0));
@@ -135,7 +143,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
     void givenPoints_testG_GUI_E3MS() {
         CPDElasticAlignerTesting& cpd = *this;
-        cpd.setPrint(dontPrint);
+        cpd.setContext(&testingContext);
         McDArray<McVec3f> xsarray, ysarray;
         cpd.xs.resize(3, 2);
         xsarray.append(McVec3f(1, 1, 0));
@@ -173,7 +181,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
     void givenPoints_testComputeP_GUI_E3MS() {
         CPDElasticAlignerTesting& cpd = *this;
-        cpd.setPrint(dontPrint);
+        cpd.setContext(&testingContext);
         McDArray<McVec3f> xsarray, ysarray;
         cpd.xs.resize(3, 3);
         xsarray.append(McVec3f(1, 1, 0));
@@ -207,7 +215,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
     void givenPoints_runCDPAndCheckResult_GUI_E3MS() {
         CPDElasticAlignerTesting& cpd = *this;
-        cpd.setPrint(dontPrint);
+        cpd.setContext(&testingContext);
         McDArray<McVec3f> xsarray, ysarray;
         cpd.xs.resize(3, 3);
         xsarray.append(McVec3f(1, 1, 0));
@@ -240,7 +248,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
     void givenPoints_runCDP_GUI_E3MS() {
         CPDElasticAlignerTesting& cpd = *this;
-        cpd.setPrint(dontPrint);
+        cpd.setContext(&testingContext);
         McDArray<McVec3f> xsarray, ysarray;
         cpd.xs.resize(3, 3);
         xsarray.append(McVec3f(1, 1, 0));
@@ -275,7 +283,7 @@ class CPDElasticAlignerTesting : public mtalign::CPDElasticAligner {
 
 static CPDElasticAlignerTesting makeCPDdataNLVMRotated() {
     CPDElasticAlignerTesting cpd;
-    cpd.setPrint(dontPrint);
+    cpd.setContext(&testingContext);
     cpd.params.useDirections = true;
 
     // create data

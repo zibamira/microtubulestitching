@@ -14,6 +14,7 @@
 #include <dai/factor.h>
 #include <dai/factorgraph.h>
 
+#include <hxalignmicrotubules/mtalign/Context.h>
 #include <hxalignmicrotubules/mtalign/PGMPairWeights.h>
 
 #include <hxalignmicrotubules/api.h>
@@ -40,7 +41,8 @@ class PGMMatcher {
                PGMPairWeights& weightComputationFunction,
                double shiftProbParam);
 
-    ~PGMMatcher();
+    /// `setContext()` configures the run-time environment.
+    void setContext(Context* ctx);
 
     void createConnectionFactors(const McDMatrix<int>& adjMat,
                                  const McDArray<int> connectedComps,
@@ -166,6 +168,11 @@ class PGMMatcher {
 
     void getBeliefEntropies(dai::DAIAlgFG* infAlgorithm,
                             McDArray<float>& beliefEntropies);
+  private:
+    /// `print()` is used for printing via `mContext`.
+    void print(QString msg);
+
+    Context* mContext;
 };
 
 }  // namespace mtalign

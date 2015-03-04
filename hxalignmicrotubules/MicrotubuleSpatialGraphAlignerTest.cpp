@@ -424,19 +424,8 @@ static void clearAllAttributes(HxSpatialGraph* graph) {
     graph->fire();
 }
 
-static void checkPairsAreTheSame(HxSpatialGraph* graph1, HxSpatialGraph* graph2,
-                                 const std::string& pairMatchingAttributeName) {
-    std::vector<int> pairs1(graph1->getNumVertices());
-    std::vector<int> pairs2(graph2->getNumVertices());
-    getPairs(graph1, pairMatchingAttributeName, pairs1);
-    getPairs(graph2, pairMatchingAttributeName, pairs2);
-    for (unsigned int i = 0; i < pairs1.size(); i++) {
-        EXPECT_EQ(pairs1[i], pairs2[i]);
-    }
-}
-
 TEST(MicrotubuleSpatialGraphAligner,
-     givenSGWithoutTransformInfo_TestFEDoesNotCrash_GUI_E3MS) {
+     givenSGWithoutTransformInfo_TestFEDoesNotCrash_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -449,21 +438,14 @@ TEST(MicrotubuleSpatialGraphAligner,
     qxtAlignSpatialGraphTool().defaults();
 }
 
-TEST(MicrotubuleSpatialGraphAligner,
-     givenSG_TestGreedyAndGapVariationOK_GUI_E3MS) {
+// sha1 differs on Windows.
+TEST_UNIX(MicrotubuleSpatialGraphAligner, givenSG_TestGreedyAndGapVariationOK_GUI_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
     TestingData sgdat("spatialgraph/spatialgraphstack_3slices_2kvertices.am");
     ASSERT_TRUE(sgdat.dataOk<HxSpatialGraph>());
     HxSpatialGraph* sg = sgdat.get<HxSpatialGraph>();
-
-    TestingData sg_expectedResult_dat(
-        "spatialgraph/"
-        "spatialgraphstack_3slices_2kvertices_matchedGreedy_withGap.am");
-    ASSERT_TRUE(sg_expectedResult_dat.dataOk<HxSpatialGraph>());
-    HxSpatialGraph* sg_expectedResult =
-        sg_expectedResult_dat.get<HxSpatialGraph>();
 
     HxSpatialGraph* origSg = sg->duplicate();
     theObjectPool->addObject(origSg);
@@ -488,11 +470,11 @@ TEST(MicrotubuleSpatialGraphAligner,
         "500");
 
     qxtAlignSpatialGraphTool().align();
-    checkCoordinatesTheSame(sg, sg_expectedResult);
-    checkPairsAreTheSame(sg, sg_expectedResult, "GreedyAssignedPairs");
+    EXPECT_THAT(sg, ht::EqDataSha1("1cb1ab810d454e6e97bc8fac489fa67df0ad6c17"));
 }
 
-TEST_UNIX(MicrotubuleSpatialGraphAligner, givenSG_TestExactAndGapVariationOK_GUI_E3MS) {
+// sha1 differs on Windows.
+TEST_UNIX(MicrotubuleSpatialGraphAligner, givenSG_TestExactAndGapVariationOK_GUI_E4MS) {
     TestingObjectPoolCleaner cleaner;
     TestingData sgdat("spatialgraph/spatialgraphstack_3slices_2kvertices.am");
     ASSERT_TRUE(sgdat.dataOk<HxSpatialGraph>());
@@ -529,12 +511,12 @@ TEST_UNIX(MicrotubuleSpatialGraphAligner, givenSG_TestExactAndGapVariationOK_GUI
         qxtAlignSpatialGraphTool().align();
     }
 
-    EXPECT_THAT(sg, ht::EqDataSha1("723736a0d1c7c99648dd5970ab863417488f4904"));
+    EXPECT_THAT(sg, ht::EqDataSha1("48e2847875bb2403d5dbf306919580b7a8b6a5b4"));
 }
 
 TEST(
     MicrotubuleSpatialGraphAligner,
-    givenSG_noMatchingStack_TestNoTransformationAppliedWhenTestingScalingForInitTransform_GUI_E3MS) {
+    givenSG_noMatchingStack_TestNoTransformationAppliedWhenTestingScalingForInitTransform_GUI_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -610,7 +592,7 @@ TEST(
 
 TEST(
     MicrotubuleSpatialGraphAligner,
-    givenSG_example5WithQueerEvidence_TestNoAssignmentToEvidenceTwice_GUI_E3MS) {
+    givenSG_example5WithQueerEvidence_TestNoAssignmentToEvidenceTwice_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
     TestingDevNullRedirect silenterr(stderr);
 
@@ -632,7 +614,7 @@ TEST(
 }
 
 TEST(MicrotubuleSpatialGraphAligner,
-     givenSG_example6_TestNoTransformationApplied_GUI_E3MS) {
+     givenSG_example6_TestNoTransformationApplied_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -648,7 +630,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 }
 
 TEST(MicrotubuleSpatialGraphAligner,
-     givenSG_example6_TestPGMMatchingOK_GUI_E3MS) {
+     givenSG_example6_TestPGMMatchingOK_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -718,7 +700,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 }
 
 TEST(MicrotubuleSpatialGraphAligner,
-     givenSG_randomSmallExample4_TestPGMMatchingOK_GUI_E3MS) {
+     givenSG_randomSmallExample4_TestPGMMatchingOK_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -738,7 +720,7 @@ TEST(MicrotubuleSpatialGraphAligner,
     checkMatchingsCorrect(pairs, sg);
 }
 TEST(MicrotubuleSpatialGraphAligner,
-     givenSG_randomSmallExample4_TestCleaningPMAttributeOK_GUI_E3MS) {
+     givenSG_randomSmallExample4_TestCleaningPMAttributeOK_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -749,7 +731,7 @@ TEST(MicrotubuleSpatialGraphAligner,
     qxtActivateAlignTool();
     qxtAlignSpatialGraphTool().defaults().align();
     qxtAlignSpatialGraphTool().tool.findLineEdit("includeLineEdit").setText(
-        "-1");
+        "0");
     qxtAlignSpatialGraphTool().align();
 
     EdgeVertexAttribute* pmAtt = dynamic_cast<EdgeVertexAttribute*>(
@@ -786,7 +768,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 }
 
 TEST(MicrotubuleSpatialGraphAligner,
-     givenSG_smallExample1_TestPGMMatchingOK_GUI_E3MS) {
+     givenSG_smallExample1_TestPGMMatchingOK_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -831,9 +813,9 @@ TEST(MicrotubuleSpatialGraphAligner,
 
     checkAllMatchedPairsInAdjacentSlices(sg, "GreedyAssignedPairs");
 
-    EXPECT_EQ(getNumUsed(sg, "GreedyAssignedPairs"), 983);
+    EXPECT_EQ(getNumUsed(sg, "GreedyAssignedPairs"), 972);
 
-    EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 163);
+    EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 162);
 
     float afterFirstOptBB[6];
     sg->getBoundingBox(afterFirstOptBB);
@@ -861,9 +843,9 @@ TEST(MicrotubuleSpatialGraphAligner,
 
     checkAllMatchedPairsInAdjacentSlices(sg, "GreedyAssignedPairs");
 
-    EXPECT_EQ(getNumUsed(sg, "GreedyAssignedPairs"), 983);
+    EXPECT_EQ(getNumUsed(sg, "GreedyAssignedPairs"), 972);
 
-    EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 329);
+    EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 327);
 
     float afterSecondOptBB[6];
     sg->getBoundingBox(afterSecondOptBB);
@@ -953,7 +935,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 }
 
 TEST(MicrotubuleSpatialGraphAligner,
-     sliceSelectorReturnsCorrectNumberOfSlices_GUI_E3MS) {
+     sliceSelectorReturnsCorrectNumberOfSlices_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
 
     TestingObjectPoolCleaner cleaner;
@@ -1015,7 +997,7 @@ class MicrotubuleSpatialGraphAlignerWithRegressionTestingData
 }
 
 TEST_P_UNIX(MicrotubuleSpatialGraphAlignerWithRegressionTestingData,
-            PGMMatchingComputesExpectedBaseline_GUI_E3MS) {
+            PGMMatchingComputesExpectedBaseline_GUI_E4MS) {
     TestingDevNullRedirect silentout(stdout);
     TestingDevNullRedirect silenterr(stderr);
     TestingObjectPoolCleaner cleaner;

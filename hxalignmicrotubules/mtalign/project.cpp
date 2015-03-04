@@ -48,11 +48,11 @@ static void getZRange(const ma::SliceSelector& sections, const bool isReference,
     const ma::MinMax transmm = sections.getZRange(transSelection);
 
     float const refThickness =
-        (!params.useAbsouteValueForEndPointRegion)
+        (!params.useAbsoluteValueForEndPointRegion)
             ? (params.endPointRegion / 100.0) * (refmm.max - refmm.min)
             : params.endPointRegion;
     float const transThickness =
-        (!params.useAbsouteValueForEndPointRegion)
+        (!params.useAbsoluteValueForEndPointRegion)
             ? (params.endPointRegion / 100.0) * (transmm.max - transmm.min)
             : params.endPointRegion;
 
@@ -208,18 +208,22 @@ getDirections(const HxSpatialGraph* sg,
     return directions;
 }
 
-static void removeEndsThatPointAwayFromMidPlane(
+// `deselectEndpointsWithWrongDirection()` deselects lines that violate the
+// model of the section boundary.  `directions` point from the boundary along
+// the line; good directions point towards the section center.  Endpoints are
+// rejected if the angle with the vector from the midplane to the section
+// center gets too large.  An greater `angleToPlaneFilter` reduces the
+// threshold so that fewer endpoints are accepted.
+static void deselectEndpointsWithWrongDirection(
     const HxSpatialGraph* sg, SpatialGraphSelection& vertices,
     bool const isAboveMidPlane, const ma::EndPointParams& params) {
     const McDArray<McVec3f> directions =
         getDirections(sg, vertices, params.maxDistForAngle);
-    McVec3f vectorPointingAwayFromPlane(0.0, 0.0, 1.0);
-    if (!isAboveMidPlane)
-        vectorPointingAwayFromPlane = -1 * vectorPointingAwayFromPlane;
-    float epsilon = params.angleToPlaneFilter;
+    const McVec3f midPlaneToSection =
+        McVec3f(0.0, 0.0, isAboveMidPlane ? 1.0 : -1.0);
+    const float threshold = (M_PI * 0.5 - M_PI * params.angleToPlaneFilter);
     for (int i = vertices.getNumSelectedVertices() - 1; i >= 0; i--) {
-        if (directions[i].angle(vectorPointingAwayFromPlane) >
-            (M_PI * 0.5 + M_PI * epsilon)) {
+        if (directions[i].angle(midPlaneToSection) > threshold) {
             vertices.deselectVertex(vertices.getSelectedVertex(i));
         }
     }
@@ -545,13 +549,27 @@ projectNumEndPoints(const HxSpatialGraph* sg, const ma::EndPointParams& params,
                     const int nPoints, SpatialGraphSelection& refSel,
                     SpatialGraphSelection& transSel) {
     ma::SliceSelector sections(sg, "TransformInfo");
+
+    mcrequire(params.refSliceNum >= 0);
+    mcrequire(params.refSliceNum < sections.getNumSlices());
+    mcrequire(params.transSliceNum >= 0);
+    mcrequire(params.transSliceNum < sections.getNumSlices());
+    // endPointRegion must be an absolute value or %.
+    mcrequire(params.useAbsoluteValueForEndPointRegion ||
+              params.endPointRegion >= 0);
+    mcrequire(params.useAbsoluteValueForEndPointRegion ||
+              params.endPointRegion <= 100);
+    // angleToPlaneFilter is proportion of 180 degrees.  90 degrees is the
+    // largest reasonable filter value.
+    mcrequire(params.angleToPlaneFilter <= 0.5);
+
     const bool isReference = true;
     selectVertices(sg, sections, isReference, nPoints, refSel, params);
     selectVertices(sg, sections, !isReference, nPoints, transSel, params);
 
     bool const isAbove = isSliceAboveMidPlane(sections, refSel, transSel, 0);
-    removeEndsThatPointAwayFromMidPlane(sg, refSel, isAbove, params);
-    removeEndsThatPointAwayFromMidPlane(sg, transSel, !isAbove, params);
+    deselectEndpointsWithWrongDirection(sg, refSel, isAbove, params);
+    deselectEndpointsWithWrongDirection(sg, transSel, !isAbove, params);
 
     ma::FacingPointSets f;
     f.ref.positions =

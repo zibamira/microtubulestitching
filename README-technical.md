@@ -31,6 +31,8 @@ start from the namespace documentation:
     tclsh src/amira/devtools/genDevRef.scro --preset ZIBAmira \
         --dirs src/zib-amira/microtubulestitching/hxalignmicrotubules/
 
+    open product/share/devreflocal/hxalignmicrotubules/namespacemtalign.html
+
 `class QxMicrotubuleAlignSpatialGraphTool` contains mainly boilerplate code to
 map GUI events to the algorithm classes.  It uses `HxManualMTAlign` to implement
 interactive manipulation of slice transformations.
@@ -211,7 +213,7 @@ Then create a squashed commit:
     this=zibamira-2015.01
 
     read _ _ tree _ <<<"$(git ls-tree ${this} -- ${subdir})"
-    git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${first}'"
+    git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${this}'"
 
     commit=$(
         (
@@ -229,11 +231,27 @@ Then create a squashed commit:
 
 # Changelog
 
-## June 2014
+2015-02: The sign of the threshold for filtering lines that are nearly parallel
+to the section boundary (parameter `Remove angel lower` in GUI) has been fixed
+[^8f93cb].  The change caused minor differences in the test results that should
+not matter in practice.
 
-The normalization factor has been changed [^c4c577] to match the definition of
-the Fisher-Mises distribution.  The change caused minor differences in the test
-results (see below).  The differences should not matter in practice.
+[^8f93cb]: zib-amira@8f93cbf9ffa9e9808562677e74eef2a1f3c56191 'mtalign: fix sign
+in angleToPlaneFilter; polish EndPointParams 2/n'
+
+
+2015-02: The Fisher-Mises normalization factor for the linear CPD has been
+changed to match the definition in the paper [^d04065].  The change did not
+affect any tests.
+
+[^d04065]: zib-amira@d040657d21079cf70bcedc9cb21a9c8947d01ac0 'mtalign: change
+Fisher-Mises normalization factor in linear CPD to match paper'
+
+
+2014-06: The normalization factor for the elastic CPD has been changed to match
+the definition of the Fisher-Mises distribution [^c4c577].  The change caused
+minor differences in the test results (see below).  The differences should not
+matter in practice.
 
     CoherentPointDriftNLFisherMisesAccTest.cpp:161:
     Value of: cpd.mKappaOut
@@ -249,4 +267,4 @@ results (see below).  The differences should not matter in practice.
          Old: 42
 
 [^c4c577]: zib-amira:c4c57770265640acdcd47e7e025a8f8b9ecdaaf2
-    CoherentPointDriftNLFisherMises: Fix fisherMises() normalization factor
+CoherentPointDriftNLFisherMises: Fix fisherMises() normalization factor

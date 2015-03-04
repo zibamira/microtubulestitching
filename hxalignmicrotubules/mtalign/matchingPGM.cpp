@@ -116,7 +116,11 @@ static void findPointsToAssignWithAdaptiveThreshold(
 }
 
 ma::MatchingPGM ma::matchingPGM(const ma::FacingPointSets& pts,
-                                const MatchingPGMParams& params) {
+                                const MatchingPGMParams& params,
+                                ma::Context* ctx) {
+    if (!ctx) {
+        ctx = &defaultContext();
+    }
     ma::MatchingPGM res;
     const mclong nRefPoints = pts.ref.positions.size();
 
@@ -131,6 +135,7 @@ ma::MatchingPGM ma::matchingPGM(const ma::FacingPointSets& pts,
     mtalign::PGMMatcher bfom(pts.ref.positions, pts.trans.positions,
                              pts.ref.directions, pts.trans.directions,
                              params.evidence, weighter, params.pairFactorParam);
+    bfom.setContext(ctx);
 
     McDArray<int> notConverged;
     McDArray<int> ambiguousAssignments;
@@ -170,8 +175,8 @@ ma::MatchingPGM ma::matchingPGM(const ma::FacingPointSets& pts,
                     ambiguousAssignmentsMarginalDifference,
                     maxMessageDiffOfLastIteration, beliefEntropies);
             } catch (dai::Exception e) {
-                std::cout << "\nInfAlgorithm threw an exception!";
-                std::cout << e.getMsg();
+                ctx->print("InfAlgorithm threw an exception!");
+                ctx->print(e.getMsg().c_str());
                 exceptions.append(e);
                 converged = false;
                 errorGroups.append(groupCounter);
@@ -223,24 +228,28 @@ ma::MatchingPGM ma::matchingPGM(const ma::FacingPointSets& pts,
     res.maxDiff = maxMessageDiffOfLastIteration;
     res.entropie = beliefEntropies;
 
-    std::cout << "\n";
-    std::cout << notConverged.size() << " networks did not converge."
-         << "\n";
+    ctx->print("");
+    ctx->print(
+        QString("%1 networks did not converge.").arg(notConverged.size()));
     for (int i = 0; i < notConverged.size(); i++) {
-        std::cout << "Group " << notConverged[i] << "\n";
+        ctx->print(QString("Group %1").arg(notConverged[i]));
     }
     for (int i = 0; i < exceptions.size(); i++) {
-        std::cout << "Exception occured in group " << errorGroups[i] << ": ";
-        std::cout << exceptions[i].getMsg() << "\n";
+        ctx->print(
+            QString("Exception occured in group %1").arg(errorGroups[i]));
+        ctx->print(exceptions[i].getMsg().c_str());
     }
-    std::cout << numVarsWithNeighbour << " variables had a neighbour.\n";
-    std::cout << ambiguousAssignments.size() << " ambiguous assignments\n";
+    ctx->print(
+        QString("%1 variables had a neighbour.").arg(numVarsWithNeighbour));
+    ctx->print(
+        QString("%1 ambiguous assignments").arg(ambiguousAssignments.size()));
     for (int i = 0; i < groupsWithAmbiguities.size(); i++) {
-        std::cout << "In group " << groupsWithAmbiguities[i] << "\n";
+        ctx->print(QString("In group %1").arg(groupsWithAmbiguities[i]));
     }
     if (res.queerEvidence.size() > 0) {
-        std::cout << "WARNING! Found " << res.queerEvidence.size()
-             << " evidence assignment that did not match the parameters.\n";
+        ctx->print(
+            QString("WARNING! Found %1 evidence assignment that did not match "
+                    "the parameters.").arg(res.queerEvidence.size()));
     }
 
     return res;

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <hxalignmicrotubules/mtalign/Context.h>
+#include <hxalignmicrotubules/mtalign/PGMPairWeights.h>
+#include <hxalignmicrotubules/mtalign/SliceSelector.h>
 #include <hxalignmicrotubules/mtalign/cpd.h>
 #include <hxalignmicrotubules/mtalign/data.h>
 #include <hxalignmicrotubules/mtalign/fitTransform.h>
@@ -10,17 +13,17 @@
 #include <hxalignmicrotubules/mtalign/matchingPGM.h>
 #include <hxalignmicrotubules/mtalign/matchingPGM_sg.h>
 #include <hxalignmicrotubules/mtalign/project.h>
-#include <hxalignmicrotubules/mtalign/SliceSelector.h>
 #include <hxalignmicrotubules/mtalign/rotation.h>
-#include <hxalignmicrotubules/mtalign/PGMPairWeights.h>
 
-// Do not include the following files, because they are used only internally:
+// Do not include the following files, because they are used only internally.
 #if 0
 #include <hxalignmicrotubules/mtalign/PGMMatcher.h>
 #endif
 
 /// Namespace `mtalign` contains functions for alignment of microtubules across
 /// section boundaries as published in [Weber 2014].
+///
+/// Some functions are illustrated in the example below.
 ///
 /// The endpoints on the two sides of a section boundary are stored as
 /// `FacingPointSets`.
@@ -49,4 +52,14 @@
 ///    electron tomograms.  PLoS ONE, e113222.
 ///    <http://dx.doi.org/10.1371/journal.pone.0113222>.
 ///
+/// **Example**
+///
+/// `hxalignmicrotubules/examples/HxCPDAlignerExample.cpp`:
+///
+/// \include HxCPDAlignerExample.cpp
+///
 namespace mtalign { }
+
+/// \example hxalignmicrotubules/examples/HxCPDAlignerExample.cpp
+///
+/// `HxCPDAlignerExample` illustrates how to use the CPD functions in `mtalign`.

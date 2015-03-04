@@ -15,23 +15,21 @@
 
 namespace ma = mtalign;
 
-static void printStdout(const char* msg) {
-    printf("%s", msg);
-}
-
-ma::CPDElasticAligner::CPDElasticAligner(void) {
+ma::CPDElasticAligner::CPDElasticAligner() {
     mMeansAndStds.std = 1.0;
     params.maxIterations = 100;
     params.eDiffRelStop = 1.e-5;
     params.sigmaSquareStop = 1.e-7;
     params.useDirections = false;
-    mPrint = &printStdout;
+    mContext = &defaultContext();
 }
 
-void ma::CPDElasticAligner::setPrint(print_t print) { mPrint = print; }
-
 void ma::CPDElasticAligner::print(QString msg) {
-    mPrint(qPrintable(msg + "\n"));
+    mContext->print(msg);
+}
+
+void ma::CPDElasticAligner::setContext(ma::Context* ctx) {
+    mContext = ctx;
 }
 
 static void convertDirectionsToMatrix(const McDArray<McVec3f>& directions,

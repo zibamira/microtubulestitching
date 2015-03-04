@@ -5,6 +5,7 @@ class HxSpatialGraph;
 
 namespace mtalign {
 
+struct Context;
 struct FacingPointSets;
 struct MatchingPGM;
 struct MatchingPGMParams;
@@ -19,6 +20,7 @@ MatchingPGM matchingPGM(const FacingPointSets& pts, MatchingPGMParams params,
                         HxSpatialGraph* sg,
                         SpatialGraphSelection& refVertexSelection,
                         SpatialGraphSelection& transVertexSelection,
-                        const SpatialGraphSelection& aroundMidPlaneSelection);
+                        const SpatialGraphSelection& aroundMidPlaneSelection,
+                        Context* ctx = 0);
 
 }  // namespace mtalign

@@ -10,7 +10,7 @@ Use gtest to run all tests of hxalignmicrotubules and dependencies.  But disable
 slow hxcore tests:
 
     ./product/bin/zibamira -test \
-        --packages=hxalignmicrotubules,pgmpointmatching \
+        --packages=hxalignmicrotubules \
         --gtest_filter=*-*_E7MS*:*HxWorkAreaTest*:*QxDevWizardTest*:*QxHistogramWorkerTest*
 
 All tests should pass.

@@ -249,7 +249,7 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs) {
     getMatchings(filename, pairs, evidence);
 }
 
-TEST(mtalign__PGMPairMatcherTest, testLBPResultReallyKlp7Group207_GUI_E4MS) {
+TEST(mtalign__PGMPairMatcherTest, testLBPResultReallyKlp7Group207_GUI_E6MS) {
     TestingDevNullRedirect silentout(stdout);
 
     McDArray<McVec2i> pairs;
@@ -281,7 +281,7 @@ TEST(mtalign__PGMPairMatcherTest, testObviousMatchTwoOnlyReally_GUI_E4MS) {
     EXPECT_EQ(pairs[1].y, 5);
 }
 
-TEST(mtalign__PGMPairMatcherTest, testThreeShouldMatchReally_GUI_E4MS) {
+TEST(mtalign__PGMPairMatcherTest, testThreeShouldMatchReally_GUI_E5MS) {
     TestingDevNullRedirect silentout(stdout);
 
     McDArray<McVec2i> pairs;
@@ -312,7 +312,7 @@ TEST(mtalign__PGMPairMatcherTest, testLBPResultReallyInaNoConnIII_GUI_E4MS) {
 }
 
 TEST(mtalign__PGMPairMatcherTest,
-     testLBPResultReallyInaNoConnectionWhy_GUI_E4MS) {
+     testLBPResultReallyInaNoConnectionWhy_GUI_E6MS) {
     TestingDevNullRedirect silentout(stdout);
 
     McDArray<McVec2i> pairs;
@@ -407,7 +407,7 @@ static int checkSameMove(Factor& fac) {
     return 1;
 }
 
-TEST(mtalign__PGMPairMatcherTest, simpleFactorGraph_GUI_E4MS) {
+TEST(mtalign__PGMPairMatcherTest, simpleFactorGraph_GUI_E5MS) {
     TestingDevNullRedirect silentout(stdout);
     TestingDevNullRedirect silenterr(stderr);
 

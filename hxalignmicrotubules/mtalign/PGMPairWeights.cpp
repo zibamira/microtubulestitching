@@ -94,7 +94,7 @@ bool ma::PGMPairWeights::canPointsBeAPair(const int point1,
         return false;
 
     const float dist3d = get3dDistance(point1, point2);
-    if (mConfig.distanceThreshold3d && (dist3d > mConfig.distanceThreshold3d))
+    if (mConfig.useDistanceThreshold3d && (dist3d > mConfig.distanceThreshold3d))
         return false;
 
     const float distProjected = getProjectedDistance(point1, point2);

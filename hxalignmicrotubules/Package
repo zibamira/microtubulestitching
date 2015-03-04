@@ -42,6 +42,7 @@ set DEFINES-MacX {
 set SRC {
     *.cpp
     mtalign/*.cpp
+    examples/*.cpp
 }
 
 set INCSRC {

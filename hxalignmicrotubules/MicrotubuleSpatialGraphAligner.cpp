@@ -227,8 +227,8 @@ void MicrotubuleSpatialGraphAligner::setMaxDistForAngle(
 }
 
 void MicrotubuleSpatialGraphAligner::setUseAbsouteValueForEndPointRegion(
-    const bool useAbsouteValueForEndPointRegion) {
-    mUseAbsouteValueForEndPointRegion = useAbsouteValueForEndPointRegion;
+    const bool useAbsoluteValueForEndPointRegion) {
+    mUseAbsoluteValueForEndPointRegion = useAbsoluteValueForEndPointRegion;
 }
 
 void
@@ -290,6 +290,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
 
     if (cpdParameters.type != ma::CPD_ELASTIC) {
         for (int i = mSelectionHelper.getNumSlices() - 1; i >= 1; --i) {
+            mcassert(warpResults[i - 1].type == ma::WT_LINEAR);
             applyTransform(warpResults[i - 1].transformMatrix, i, -1, editor);
         }
     } else {
@@ -304,6 +305,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
         pb->set("alpha", cpdParameters.alphaForMLS);
         mGraph->parameters.insert(pb);
         for (int i = mSelectionHelper.getNumSlices() - 1; i >= 1; --i) {
+            mcassert(warpResults[i - 1].type == ma::WT_ELASTIC);
             addWarpPointsToParams(warpResults[i - 1].mlsParams, i);
             MovingLeastSquares mls;
             mls.setAlpha(warpResults[i - 1].mlsParams.alpha);
@@ -350,7 +352,7 @@ void MicrotubuleSpatialGraphAligner::warpSlices(const int refSliceNum,
     ma::EndPointParams params =
         makePointRepresentationParams(refSliceNum, transSliceNum, midPlane);
     const ma::FacingPointSets points = ma::projectEndPoints(mGraph, params);
-    ma::cpd(points, cpdParams, deformation);
+    ma::cpd(points, deformation, cpdParams);
 }
 
 void MicrotubuleSpatialGraphAligner::applyMLS(MovingLeastSquares& mls,
@@ -614,7 +616,8 @@ MicrotubuleSpatialGraphAligner::makePointRepresentationParams(
     params.transSliceNum = transSliceNum;
     params.projectionPlane = projectionPlane;
     params.endPointRegion = mEndPointRegion;
-    params.useAbsouteValueForEndPointRegion = mUseAbsouteValueForEndPointRegion;
+    params.useAbsoluteValueForEndPointRegion =
+        mUseAbsoluteValueForEndPointRegion;
     params.projectionType = asEnumProjectionType(mProjectionType);
     params.numMaxPointsForInitTransform = mNumMaxPointsForInitialTransform;
     params.maxDistForAngle = mMaxDistForAngle;

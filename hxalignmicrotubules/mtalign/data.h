@@ -22,7 +22,9 @@ enum MatchingAlgorithm {
 };
 
 /// `DirectionalPoints` represents points with `positions` and `directions` on
-/// a section boundary.
+/// a section boundary.  The `directions` point from the boundary point towards
+/// the section center.  The direction is reversed in `cpd()` to match the
+/// figure in [Weber 2014] that illustrates the model at the section boundary.
 struct DirectionalPoints {
     McDArray<McVec3f> positions;
     McDArray<McVec3f> directions;

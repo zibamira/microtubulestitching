@@ -165,7 +165,7 @@ class MicrotubuleSpatialGraphAligner : public McHandable {
 
     // Global parameters, suffix.
     float mEndPointRegion;
-    bool mUseAbsouteValueForEndPointRegion;
+    bool mUseAbsoluteValueForEndPointRegion;
     McString mProjectionType;
     McString mTransformType;
     bool mCreateMatchingLabels;

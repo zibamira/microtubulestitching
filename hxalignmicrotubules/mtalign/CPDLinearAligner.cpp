@@ -38,6 +38,15 @@ ma::CPDLinearAligner::CPDLinearAligner() {
     params.sigmaSquareStop = 1.e-5;
     params.useDirections = true;
     params.usePositions = true;
+    mContext = &defaultContext();
+}
+
+void ma::CPDLinearAligner::print(QString msg) {
+    mContext->print(msg);
+}
+
+void ma::CPDLinearAligner::setContext(ma::Context* ctx) {
+    mContext = ctx;
 }
 
 static void convertMcDArraysToMatrix(const McDArray<McVec3f>& coords,
@@ -119,9 +128,9 @@ mtalign::AlignInfo ma::CPDLinearAligner::align(McDMatrix<double>& Rc, double& s,
     const int M = Yc.nRows();
     const double Md = M;
     const int N = Xc.nRows();
-    std::cout << "\nN= " << N;
-    std::cout << "\nM= " << M;
-    std::cout << "\nw is:" << w;
+    print(QString("N: %1").arg(N));
+    print(QString("M: %1").arg(M));
+    print(QString("w: %1").arg(w));
     const double Nd = N;
     const int Dc = Xc.nCols();
 
@@ -129,10 +138,10 @@ mtalign::AlignInfo ma::CPDLinearAligner::align(McDMatrix<double>& Rc, double& s,
     t.resize(Dc);
     t.fill(0.0);
     // initialize sigma
-    std::cout << "\nCompute initial sigma...";
+    print("Compute initial sigma...");
     sigmaSquare = (1.0 / (2.0 * Md * Nd)) * sumSquaredDistances(Xc, Yc);
 
-    std::cout << "\nInitial sigma^2 is" << sigmaSquare;
+    print(QString("Initial sigma^2 is %1").arg(sigmaSquare));
     s = 1.0;
     Rc.resize(Dc, Dc);
     Rc.makeIdentity();
@@ -144,13 +153,13 @@ mtalign::AlignInfo ma::CPDLinearAligner::align(McDMatrix<double>& Rc, double& s,
 
     McDMatrix<double> shiftedYc = Yc;
     McDMatrix<double> shiftedYd = Yd;
-    std::cout << "\n maxIter is: " << maxIter;
+    print(QString("maxIter is: %1").arg(maxIter));
     double E;  //=computeLogLikelihood(Rc,s,t,sigmaSquare,Rd,kappa);
     kappa = 1.e-4;
-    std::cout << "\nInitial kappa is" << kappa;
+    print(QString("Initial kappa is %1").arg(kappa));
 
     computeP(Xc, Xd, shiftedYc, shiftedYd, sigmaSquare, kappa, w, P, E);
-    std::cout << "\nE: " << E << "\n";
+    print(QString("E: %1").arg(E));
     double EDiffPerc = FLT_MAX;
 
     int i;
@@ -163,7 +172,7 @@ mtalign::AlignInfo ma::CPDLinearAligner::align(McDMatrix<double>& Rc, double& s,
         // M-Step
         // compute Np
         double NP = getNP(P);
-        std::cout << "...NP is" << NP;
+        print(QString("...NP is %1").arg(NP));
         // compue muX and muY
         McDMatrix<double> PT = P;
         PT.transpose();
@@ -172,21 +181,34 @@ mtalign::AlignInfo ma::CPDLinearAligner::align(McDMatrix<double>& Rc, double& s,
         getMu(Yc, P, NP, muY);
         McDMatrix<double> XcHat, YcHat;
         getHat(Xc, muX, XcHat);
-        std::cout << "\nmuX is " << muX[0][0] << " " << muX[1][0];
+        print(QString("muX is %1 %2").arg(muX[0][0]).arg(muX[1][0]));
         getHat(Yc, muY, YcHat);
-        std::cout << "\nmuY is " << muY[0][0] << " " << muY[1][0];
+        print(QString("muY is %1 %2").arg(muY[0][0]).arg(muY[1][0]));
         // Initialize all the long expressions
+        print("...initializing terms...");
         CPDLinearAlignerTerms terms(XcHat, Xd, YcHat, Yd, P);
         if (usePositions && !useDirections) {
+            print("...computing R...");
             terms.computeRc(Rc);
+            print(QString("Rc is : %1 %2 %3 %4")
+                      .arg(Rc[0][0])
+                      .arg(Rc[0][1])
+                      .arg(Rc[1][0])
+                      .arg(Rc[1][1]));
             if (withScaling)
                 terms.computeS(Rc, s);
 
             computeT(muX, s, Rc, muY, t);
             sigmaSquare = terms.computeSigmaSquare(Rc, s, NP);
         } else if (!usePositions && useDirections) {
+            print("...computing R...");
             terms.computeRd2d(Rd);
-            terms.computeKappa(Rd, NP, kappa);
+            print(QString("Rd is : %1 %2 %3 %4")
+                      .arg(Rd[0][0])
+                      .arg(Rd[0][1])
+                      .arg(Rd[1][0])
+                      .arg(Rd[1][1]));
+            terms.computeKappa(Rd, NP, kappa, mContext->print);
             Rc[0][0] = Rd[0][0];
             Rc[1][0] = Rd[1][0];
             Rc[0][1] = Rd[0][1];
@@ -195,41 +217,42 @@ mtalign::AlignInfo ma::CPDLinearAligner::align(McDMatrix<double>& Rc, double& s,
             // influence the outcome
             computeT(muX, s, Rc, muY, t);
         } else {
-            std::cout << "..optimize parameters with IPOpt...";
+            print("..optimize parameters with IPOpt...");
             terms.optimizeParameters(Rc, s, sigmaSquare, kappa, NP,
-                                     params.withScaling);
+                                     params.withScaling, mContext->print);
             computeT(muX, s, Rc, muY, t);
         }
-        std::cout << "...new s is " << s << "...";
-        std::cout << "...new t is " << t[0] << " " << t[1] << "...";
-        std::cout << "...new sigma^2 is " << sigmaSquare << "...";
-        std::cout << "...new kappa is " << kappa << "...";
-        std::cout << "...new rho is " << mtalign::rotationAngle2d(Rc) << "...";
+        print(QString("...new s is %1 ...").arg(s));
+        print(QString("...new t is %1 %2 ...").arg(t[0]).arg(t[1]));
+        print(QString("...new sigma^2 is %1 ...").arg(sigmaSquare));
+        print(QString("...new kappa is %1 ...").arg(kappa));
+        print(QString("...new rho is %1 ...").arg(ma::rotationAngle2d(Rc)));
         /*******************************************************************************/
         // perform E-step
         // 1. Compute new ys
-        std::cout << "\n..shift ys ..";
+        print(QString("..shift ys .."));
 
         // compute the P matrix, conditional P(x|m)
-        std::cout << "\n..compute P..";
+        print(QString("..compute P.."));
         double oldE = E;
         shiftYCoords(Yc, Rc, s, t, shiftedYc);
         shiftYDirections(Yd, Rc, shiftedYd);
 
         computeP(Xc, Xd, shiftedYc, shiftedYd, sigmaSquare, kappa, w, P, E);
-        std::cout << "\nE: " << E << "\n";
+        print(QString("E: %1").arg(E));
         EDiffPerc = (oldE - E) / fabs(oldE);
-        std::cout << "EDiff: " << EDiffPerc << "\n";
+        print(QString("EDiff: %1").arg(EDiffPerc));
         if (sigmaSquare > sigmaTol && kappa < 300)
             mcassert(EDiffPerc > -1.e-6);
-        std::cout << "\n This was EM iteration " << i;
+        print(QString("This was EM iteration %1").arg(i));
+        print("");
         if (i == maxIter - 1)
-            std::cout << "\n EM max number of iterations reached.";
+            print("EM max number of iterations reached.");
     }
 
     mtalign::AlignInfo info;
     info.timeInSec = watch.stop();
-    std::cout << "\nThis took " << info.timeInSec << " seconds.\n";
+    print(QString("This took %1 seconds.").arg(info.timeInSec));
     info.sigmaSquare = sigmaSquare;
     info.kappa = kappa;
     info.numIterations = i;
@@ -244,11 +267,16 @@ void ma::CPDLinearAligner::computeT(const McDMatrix<double>& muX,
                                     McDVector<double>& t) {
     McDVector<double> rotatedMuY(2);
     R.multVec(muY.getColVector(0), rotatedMuY);
-    std::cout << "...rotatedMuY is " << rotatedMuY[0] << " " << rotatedMuY[1];
+    print(QString("...rotatedMuY is %1 %2")
+              .arg(rotatedMuY[0])
+              .arg(rotatedMuY[1]));
     rotatedMuY *= s;
-    std::cout << "...rotatedMuY*s is " << rotatedMuY[0] << " " << rotatedMuY[1];
-    std::cout << "...muX.getColVector(0) is " << muX.getColVector(0)[0] << " "
-              << muX.getColVector(0)[1];
+    print(QString("...rotatedMuY*s is %1 %2")
+              .arg(rotatedMuY[0])
+              .arg(rotatedMuY[1]));
+    print(QString("...muX.getColVector(0) is %1 %2")
+              .arg(muX.getColVector(0)[0])
+              .arg(muX.getColVector(0)[1]));
     t = muX.getColVector(0);
     t -= rotatedMuY;
 }
@@ -336,17 +364,10 @@ void ma::CPDLinearAligner::normalize() {
         cur *= 1.0 / mMeansAndStds.stdC;
         Yc.setRowVector(cur, i);
     }
-    std::cout << "\nMeanC is: " << mMeansAndStds.meanC[0] << " "
-              << mMeansAndStds.meanC[1];
-    std::cout << "\nstdC is: " << mMeansAndStds.stdC << " ";
-}
-
-// The factor 4.0 should be replaced by 2.0 as in mtalign::fisherMises().
-static double fisherMisesFixme(const McDVector<double>& mean,
-                               const double kappa, const McDVector<double> x) {
-    double dotProd = mean[0] * x[0] + mean[1] * x[1] + mean[2] * x[2];
-    return kappa / (4.0 * M_PI * (exp(kappa) - exp(-1 * kappa))) *
-           exp(kappa * dotProd);
+    print(QString("MeanC is: %1 %2")
+              .arg(mMeansAndStds.meanC[0])
+              .arg(mMeansAndStds.meanC[1]));
+    print(QString("stdC is: %1").arg(mMeansAndStds.stdC));
 }
 
 void ma::CPDLinearAligner::computeP(const McDMatrix<double>& Xc,
@@ -379,8 +400,8 @@ void ma::CPDLinearAligner::computeP(const McDMatrix<double>& Xc,
                 numerator *= ma::gauss(Yc.getRowVector(i), sigmaSquare,
                                        Xc.getRowVector(j));
             if (useDirections)
-                numerator *= fisherMisesFixme(Yd.getRowVector(i), kappa,
-                                              Xd.getRowVector(j));
+                numerator *= ma::fisherMises(Yd.getRowVector(i), kappa,
+                                             Xd.getRowVector(j));
             double y = numerator - c;
             double t = sum + y;
             c = t - sum - y;
@@ -490,7 +511,6 @@ ma::CPDLinearAlignerTerms::CPDLinearAlignerTerms(const McDMatrix<double>& XcHat,
                                                  const McDMatrix<double>& YcHat,
                                                  const McDMatrix<double>& Yd,
                                                  const McDMatrix<double>& P) {
-    std::cout << "...initializing terms...";
     McDMatrix<double> XcHatT = XcHat;
     XcHatT.transpose();
     McDMatrix<double> YcHatT = YcHat;
@@ -518,16 +538,12 @@ void ma::CPDLinearAlignerTerms::computeS(const McDMatrix<double>& R,
     ma::multMatrices(numeratorMatrix, R, dummyMat, 1.0, 0.0,
                      numeratorMatrixRotated);
     double numerator = ma::trace(numeratorMatrixRotated);
-    std::cout << "\n numerator for s: " << numerator;
-
     McDMatrix<double> denominatorMatrix = YcHatT_x_dP1_x_YcHat;
     double denominator = ma::trace(denominatorMatrix);
-    std::cout << "\n denominator for s: " << denominator;
     s = numerator / denominator;
 }
 
 void ma::CPDLinearAlignerTerms::computeRc(McDMatrix<double>& Rc) const {
-    std::cout << "\n...computing R...";
     McDMatrix<double> U, V, SVD, dummyMat(2, 2);
 
     SVD = XcHatT_x_PT_x_YcHat;
@@ -543,12 +559,9 @@ void ma::CPDLinearAlignerTerms::computeRc(McDMatrix<double>& Rc) const {
     C.makeIdentity();
     C[1][1] = lastDiagEntry;
     ma::multThreeMatrices(U, C, VT, Rc);
-    std::cout << "\nRc is :\n" << Rc[0][0] << " " << Rc[0][1] << "\n"
-              << Rc[1][0] << " " << Rc[1][1] << "\n";
 }
 
 void ma::CPDLinearAlignerTerms::computeRd2d(McDMatrix<double>& Rd) const {
-    std::cout << "\n...computing R...";
     McDMatrix<double> U, V, SVD(2, 2), dummyMat(2, 2), R2d;
 
     SVD[0][0] = XdT_x_PT_x_Yd[0][0];
@@ -561,13 +574,11 @@ void ma::CPDLinearAlignerTerms::computeRd2d(McDMatrix<double>& Rd) const {
     VT.transpose();
 
     McDMatrix<double> lastDiagEntryMat;
-    std::cout << "one\n";
     ma::multMatrices(U, VT, dummyMat, 1.0, 0.0, lastDiagEntryMat);
     double lastDiagEntry = lastDiagEntryMat.det();
     McDMatrix<double> C(2, 2);
     C.makeIdentity();
     C[1][1] = lastDiagEntry;
-    std::cout << "two\n";
     ma::multThreeMatrices(U, C, VT, R2d);
 
     Rd.makeIdentity();
@@ -575,9 +586,6 @@ void ma::CPDLinearAlignerTerms::computeRd2d(McDMatrix<double>& Rd) const {
     Rd[1][0] = R2d[1][0];
     Rd[0][1] = R2d[0][1];
     Rd[1][1] = R2d[1][1];
-
-    std::cout << "\nRd is :\n" << Rd[0][0] << " " << Rd[0][1] << "\n"
-              << Rd[1][0] << " " << Rd[1][1] << "\n";
 }
 
 double ma::CPDLinearAlignerTerms::computeSigmaSquare(
@@ -600,52 +608,53 @@ double ma::CPDLinearAlignerTerms::computeSigmaSquare(
 
 static double kappaFirstDerivative(const double kappa, const double c,
                                    const double Np) {
-    std::cout << "\n first:" << c + Np*(1.0 / kappa - 1.0 / tan(kappa));
-    std::cout << "\n c is:" << c;
     return c + Np * (1.0 / kappa - 1.0 / tanh(kappa));
 }
 
 static double kappaSecondDerivative(const double kappa, const double Np) {
-    std::cout << "\n second:"
-              << +Np*(-1.0 / (kappa * kappa) + pow(1.0 / sinh(kappa), 2.0));
-    std::cout << "\n cur kappa: " << kappa;
     return +Np * (-1.0 / (kappa * kappa) + pow(1.0 / sinh(kappa), 2.0));
 }
 
 static bool newtonsMethodForKappa(double& kappa, const double c,
-                                  const double Np) {
+                                  const double Np,
+                                  ma::Context::print_t& print) {
     double diff = FLT_MAX;
     int counter = 0;
     if (c > Np - 1.e-4)
         return false;
     while (fabs(diff) > 1.e-10 && counter < 200) {
-        diff = kappaFirstDerivative(kappa, c, Np) /
-               kappaSecondDerivative(kappa, Np);
-        std::cout << "kappa:" << kappa;
+        const double first = kappaFirstDerivative(kappa, c, Np);
+        const double second = kappaSecondDerivative(kappa, Np);
+        diff = first / second;
+        print(QString("first: %1").arg(first));
+        print(QString("c: %1").arg(c));
+        print(QString("second: %1").arg(second));
+        print(QString("kappa: %1").arg(kappa));
         kappa = kappa - diff;
-        std::cout << "kappa-diff:" << kappa;
+        print(QString("kappa-diff: %1").arg(kappa));
         counter++;
     }
     return true;
 }
 
-bool ma::CPDLinearAlignerTerms::computeKappa(const McDMatrix<double>& Rd,
-                                             const double Np,
-                                             double& kappa) const {
-    std::cout << "\n computeKappa:";
-
+bool
+ma::CPDLinearAlignerTerms::computeKappa(const McDMatrix<double>& Rd,
+                                        const double Np, double& kappa,
+                                        ma::Context::print_t& print) const {
+    print("computeKappa:");
     // compute first term
     McDMatrix<double> cMat = XdT_x_PT_x_Yd;
     cMat.transpose();
     McDMatrix<double> cMatRotated, dummyMat;
     ma::multMatrices(cMat, Rd, dummyMat, 1.0, 0.0, cMatRotated);
     double c = ma::trace(cMatRotated);
-    return newtonsMethodForKappa(kappa, c, Np);
+    return newtonsMethodForKappa(kappa, c, Np, print);
 }
 
 bool ma::CPDLinearAlignerTerms::optimizeParameters(
     McDMatrix<double>& R, double& s, double& sigmaSquare, double& kappa,
-    const double Np, const bool withScaling) const {
+    const double Np, const bool withScaling,
+    ma::Context::print_t& print) const {
 
     CPDLinearAlignerDerivatives func;
     func.Np = Np;
@@ -681,9 +690,9 @@ bool ma::CPDLinearAlignerTerms::optimizeParameters(
     startVector[2] = kappa;
     startVector[3] = sigmaSquare;
     func.initCurParams(startVector);
-    std::cout << "\n sigma^2 before init for opt: " << sigmaSquare;
+    print(QString("sigma^2 before init for opt: %1").arg(sigmaSquare));
     func.initStartValues(startVector);
-    std::cout << "\n sigma^2 after init for opt: " << startVector[3];
+    print(QString("sigma^2 after init for opt: %1").arg(startVector[3]));
     optimizer->resultValues.resize(4);
     optimizer->sigmaSquare = startVector[3];
     double* result = optimizer->resultValues.dataPtr();
@@ -699,21 +708,21 @@ bool ma::CPDLinearAlignerTerms::optimizeParameters(
     ip::SmartPtr<ip::IpoptApplication> app = IpoptApplicationFactory();
 
     // Change some options
-
     app->Options()->SetStringValue("mu_strategy", "adaptive");
     app->Options()->SetStringValue("derivative_test", "second-order");
     app->Options()->SetIntegerValue("max_iter", 1000);
     app->Options()->SetNumericValue("max_cpu_time", 30);
 
-    app->Options()->SetIntegerValue("print_level", 4);
+    // It can be useful to increase the `print_level` to 4 or higher for
+    // debugging.
+    app->Options()->SetIntegerValue("print_level", 0);
 
     // Intialize the IpoptApplication and process the options
     ip::ApplicationReturnStatus status;
     status = app->Initialize();
     if (status != ip::Solve_Succeeded) {
-        std::cout << std::endl << std::endl
-                  << "*** Error during initialization!" << std::endl
-                  << "Errorcode is " << status << std::endl;
+        print("*** Error during initialization!");
+        print(QString("*** Errorcode is %1").arg(status));
         return (int)status;
     }
 
@@ -721,11 +730,10 @@ bool ma::CPDLinearAlignerTerms::optimizeParameters(
     status = app->OptimizeTNLP(mynlp);
 
     if (status == ip::Solve_Succeeded) {
-        std::cout << std::endl << std::endl << "*** The problem solved."
-                  << std::endl;
+        print("*** The problem solved.");
     } else {
-        std::cout << std::endl << std::endl << "*** The problem did not solve."
-                  << std::endl << "Code is " << status << std::endl;
+        print(
+            QString("*** The problem did not solve.  Code is %1").arg(status));
     }
 
     // As the SmartPtrs go out of scope, the reference count
