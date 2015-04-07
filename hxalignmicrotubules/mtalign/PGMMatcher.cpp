@@ -1,5 +1,7 @@
 #include <hxalignmicrotubules/mtalign/PGMMatcher.h>
 
+#include <QString>
+
 #include <dai/bipgraph.h>
 #include <dai/daialg.h>
 #include <dai/factorgraph.h>

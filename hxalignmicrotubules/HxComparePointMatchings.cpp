@@ -1,5 +1,7 @@
 #include <hxalignmicrotubules/HxComparePointMatchings.h>
 
+#include <QString>
+
 #include <cstdlib>
 
 #include <hxcore/HxMessage.h>

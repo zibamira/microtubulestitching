@@ -1,5 +1,7 @@
 #include <hxalignmicrotubules/HxIteratePointMatchingUntilConvergence.h>
 
+#include <QString>
+
 #include <hxcore/HxMessage.h>
 #include <hxcore/HxObjectPool.h>
 #include <hxspatialgraph/HierarchicalLabels.h>

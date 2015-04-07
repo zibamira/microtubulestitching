@@ -1,5 +1,7 @@
 #include <hxalignmicrotubules/mtalign/CPDLinearAligner.h>
 
+#include <QString>
+
 #include <mcla/f77_blas.h>
 #include <mcla/f77_lapack.h>
 #include <mclib/McVec2d.h>

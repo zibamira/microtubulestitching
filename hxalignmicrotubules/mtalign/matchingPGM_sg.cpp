@@ -2,6 +2,8 @@
 
 #include <limits>
 
+#include <QString>
+
 #include <hxspatialgraph/HxSpatialGraph.h>
 #include <hxspatialgraph/SpatialGraphSelection.h>
 #include <mclib/McDArray.h>

@@ -1,3 +1,4 @@
+set PACKAGE {hxalignmicrotubules}
 set LABELS {spatialgraph}
 
 set LIBS {
@@ -42,7 +43,6 @@ set DEFINES-MacX {
 set SRC {
     *.cpp
     mtalign/*.cpp
-    examples/*.cpp
 }
 
 set INCSRC {
@@ -50,11 +50,12 @@ set INCSRC {
     mtalign/*.h
 }
 
-# Exclude attic if old init style is used, because init.cpp does not work with
+# Exclude attic for Amira 5 builds,  because old init.cpp does not work with
 # subdirs.
-if { [getOption "autoinitstyle"] != "class-member" } {
+if { [passLabelFilter apiAmiraGreater5] } {
   append SRC {
     attic/*.cpp
+    examples/*.cpp
   }
   append INCSRC {
     attic/*.h

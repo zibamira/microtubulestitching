@@ -1,37 +1,63 @@
-# Package Structure
+# Introduction
+
+This document contains various technical details about the microtubule stitching
+implementation that is described in [Weber 2014].
+
+# Package structure
 
 The supplementary software uses several packages in `zib-amira`.
 
 The first group of packages, which are contained in this folder, only depends on
-each other and can be easily made available together:
+each other.  They contain the main algorithms from [Weber 2014] an can be easily
+made available outside ZIB:
 
  - `hxalignmicrotubules`: Algorithms described in the paper.
  - `dai`: Inference in graphical models.  It is a slightly modified version of
-   the upstream at `git://git.tuebingen.mpg.de/libdai.git`.  We should probably
-   change how we track the upstream: we should import entires tree snapshots in
-   order to avoid tainting our history with authors that we don't know; or we
-   could track libdai as a submodule that contains a fork of libdai with our
-   modifications and fixes.
+   the upstream from `git://git.tuebingen.mpg.de/libdai.git`.  See below for
+   details about the git history.
 
-The first group of packages depends on a second group of packages that are used
-by other unrelated packages in zib-amira.git:
+`hxalignmicrotubules` depends on a second group of packages that are used by
+other unrelated packages in zib-amira.git:
 
- - `pointmatching`: Clique-based alignment.  Also used by `hxalignspatialgraph`.
- - `hxgraphalgorithms`: Also used by various other packages.
+ - `pointmatching`: clique-based alignment.  Also used by `hxalignspatialgraph`.
+ - `hxgraphalgorithms`: used by various other packages.
  - `ipopt`: Interior point optimization library from
    <https://projects.coin-or.org/Ipopt>.
 
 # Classes, functions, call paths, ..
 
-Some of the code has been cleaned up, restructured and documented.  Such code is
-usually found in the namespace `mtalign`.  Use the following command to create
-a local Doxygen documentation in `product/share/devreflocal/index.html`; then
-start from the namespace documentation:
+## mtalign
+
+Code that has been cleaned up, restructured and documented is usually found in
+the namespace `mtalign`.  Use the following command to create a local Doxygen
+documentation in `product/share/devreflocal/index.html`; then start from the
+namespace documentation:
 
     tclsh src/amira/devtools/genDevRef.scro --preset ZIBAmira \
         --dirs src/zib-amira/microtubulestitching/hxalignmicrotubules/
 
     open product/share/devreflocal/hxalignmicrotubules/namespacemtalign.html
+
+The folder `hxalignmicrotubules/examples/` and the Doxygen documentation contain
+an example how to use some of the low-level functions that implement the main
+algorithms of [Weber 2014] and are mostly independent of Amira.
+
+## Amira integration
+
+This section contains some unsorted notes about the integration of the low-level
+functions with Amira.
+
+Be careful to maintain compatibility with the supplementary data deposited at
+Dryad <http://dx.doi.org/10.5061/dryad.v8j20>.  It contains Amira scripts that
+use the script object `TryStitchingParametersAndIterate.scro` and the following
+classes:
+
+    HxCPDSpatialGraphWarp
+    HxComparePointMatchings
+    HxIteratePointMatchingUntilConvergence
+    HxRotateSpatialGraphStackSliceAndCDP
+    HxTestPointMatching
+    SpreadSheetWrapper
 
 `class QxMicrotubuleAlignSpatialGraphTool` contains mainly boilerplate code to
 map GUI events to the algorithm classes.  It uses `HxManualMTAlign` to implement
@@ -40,14 +66,14 @@ interactive manipulation of slice transformations.
 The enum `MicrotubuleSpatialGraphAligner::CPDType` describes coherent point
 drift transformation types.
 
-`class MicrotubuleSpatialGraphAligner` contains a mixture of things.  Primarily,
-it receives calls from the GUI class and calls to the low-level algorithms.  But
-it also includes some algorithmic details.
+`class MicrotubuleSpatialGraphAligner` is a mixed bag.  Primarily, it receives
+calls from the GUI class and calls down to the low-level algorithms.  But it
+also includes some algorithmic details.
 
 Algorithm 1 'linear alignment from orientation' and Algorithm 2 'linear
 alignment from position and orientation' are implemented in `class
 CPDLinearAligner`.  Algorithm 3 'elastic alignment' is implemented in `class
-CPDElasticAligner`.  The algorithms are now available through `mtalign::cpd()`.
+CPDElasticAligner`.  The algorithms are available through `mtalign::cpd()`.
 
 Call path from the GUI to `CPDElasticAligner` (Algorithm 3):
 
@@ -122,18 +148,6 @@ The call path is as follows:
 `DerivativesForRigidRegistration` contains the Q derivatives from the supporting
 information.
 
-Be careful to maintain compatibility with the supplementary data deposited at
-Dryad <http://dx.doi.org/10.5061/dryad.v8j20>.  It contains Amira scripts that
-use the script object `TryStitchingParametersAndIterate.scro` and the following
-classes:
-
-    HxCPDSpatialGraphWarp
-    HxComparePointMatchings
-    HxIteratePointMatchingUntilConvergence
-    HxRotateSpatialGraphStackSliceAndCDP
-    HxTestPointMatching
-    SpreadSheetWrapper
-
 ## Transformations
 
 `Mat4f` transforms are applied to the points and multiplied to matrices that are
@@ -168,18 +182,33 @@ following files might be relevant when testing the alignment:
     spatialgraphstack_3slices_2kvertices_matchedGreedy_withGap.am
     spatialgraphstack_3slices_2kverticesWithLabels.am
 
-# How to export the microtubulestitching source to a separate git repo?
+# Git history
+
+## libdai
+
+In the past, we imported the full git history from the upstream into the git
+repository `zib-amira.git` at ZIB.  We should consider changing this in the
+future and import only entire tree snapshots in order to avoid tainting our
+history with authors that we don't know; or we could track libdai as a submodule
+that contains a fork of libdai with our modifications and fixes.
+
+## How to export the microtubulestitching source to a separate git repo?
 
 The sub-directory `zib-amira/microtubulestitching` is exported to a separate git
 repo.  The full history is maintained in `zib-amira`.  The export is done as
 squashed commits from release tags `zibamira-*.*` using the low-level `git
 commit-tree`.
 
-The initial export:
+The configuration:
 
     subdir=microtubulestitching
     branch=${subdir}/master
     first=zibamira-2014.56
+
+The initial export:
+
+    [ "$(basename "$(pwd)")" = "zib-amira" ] ||
+        printf "Run the commands in the toplevel of zib-amira.git worktree."
 
     read _ _ tree _ <<<"$(git ls-tree ${first} -- ${subdir})"
     git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${first}'"
@@ -191,6 +220,9 @@ The initial export:
     printf '\n%s\n\n' "Branch '${branch}' is now at:" && git show -s ${branch}
 
 For further exports, first search the commit that matches the exported tree:
+
+    [ "$(basename "$(pwd)")" = "zib-amira" ] ||
+        echo "Run the commands in the toplevel of zib-amira.git worktree."
 
     prevtree=$(git show -s --pretty=format:%T ${branch})
     git cat-file tree ${prevtree} >/dev/null || echo "failed to determine prevtree"
@@ -208,9 +240,11 @@ For further exports, first search the commit that matches the exported tree:
     git describe --exact-match ${prev} ||
         echo "failed to determine commit of previous export."
 
-Then create a squashed commit:
+Then configure the current version to export:
 
-    this=zibamira-2015.01
+    this=zibamira-2015.09
+
+and create a squashed commit:
 
     read _ _ tree _ <<<"$(git ls-tree ${this} -- ${subdir})"
     git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${this}'"

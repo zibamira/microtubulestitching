@@ -4,12 +4,13 @@
 #include <limits>
 
 #include <hxcore/HxMessage.h>
+#include <mclib/McAssert.h>
+#include <mclib/McBitfield.h>
 #include <mclib/McDArray.h>
 #include <mclib/McMath.h>
-#include <mclib/McBitfield.h>
+#include <mclib/McRotation.h>
 #include <mclib/McVec2i.h>
 #include <mclib/McVec3f.h>
-#include <mclib/McRotation.h>
 
 #include <pointmatching/StartTransformationGenerator3d.h>
 #include <pointmatching/Transformation.h>

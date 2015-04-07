@@ -52,7 +52,9 @@ void HxCPDAlignerExample::compute() {
     // Duplicate input, because it is modified below.
     McHandle<HxSpatialGraph> stack = in->duplicate();
 
-    // Configure printing to Amira console.
+    // Configure an optional Context object to redirect printing to the Amira
+    // console.  It will be passed to functions below to configure their
+    // behavior.
     ma::Context ctx;
     ctx.print = &printMsg;
 

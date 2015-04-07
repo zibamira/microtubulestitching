@@ -1,5 +1,7 @@
 #include <hxalignmicrotubules/mtalign/matchingPGM.h>
 
+#include <QString>
+
 #include <mclib/McVec2i.h>
 #include <mclib/McBitfield.h>
 
