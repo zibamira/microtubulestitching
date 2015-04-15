@@ -9,7 +9,6 @@
 #include <dai/bp.h>
 #include <dai/factor.h>
 
-using namespace std;
 using namespace dai;
 
 namespace ma = mtalign;
@@ -82,7 +81,7 @@ bool ma::PGMMatcher::getNextConnectedComponent(ConnectedFactorGraph& graph) {
 // connComps array.
 
 void ma::PGMMatcher::getAllConnectedComponents(
-    vector<ConnectedFactorGraph>& graphs) {
+    std::vector<ConnectedFactorGraph>& graphs) {
 
     mQueerEvidence.resize(0);
 
@@ -201,10 +200,10 @@ void ma::PGMMatcher::createFactorGraphFactors(
     const McDMatrix<int>& variableAdjacenceMatrix,
     ConnectedFactorGraph& factorGraph) {
 
-    vector<Factor> pairFactors;
+    std::vector<Factor> pairFactors;
     createConnectionFactors(variableAdjacenceMatrix, factorGraph.variables,
                             pairFactors);
-    vector<Factor> singletonFactors;
+    std::vector<Factor> singletonFactors;
     createSingletonFactors(factorGraph.variables, singletonFactors);
 
     fillSingletonVals(variableAssignmentMat, singletonFactors, factorGraph);
@@ -244,9 +243,10 @@ void ma::PGMMatcher::getAssignmentsForVariable(
 // creates a pairwise factor for each adjacent variables in one connected
 // component
 // does not set the values yet
-void ma::PGMMatcher::createConnectionFactors(const McDMatrix<int>& adjMat,
-                                             const McDArray<int> connectedComp,
-                                             vector<Factor>& pairFactorList) {
+void
+ma::PGMMatcher::createConnectionFactors(const McDMatrix<int>& adjMat,
+                                        const McDArray<int> connectedComp,
+                                        std::vector<Factor>& pairFactorList) {
     for (int i = 0; i < connectedComp.size(); i++) {
         int curVar = connectedComp[i];
         McDArray<int> assigmentsForIthVariable;
@@ -267,9 +267,9 @@ void ma::PGMMatcher::createConnectionFactors(const McDMatrix<int>& adjMat,
 
 // creates all singleton factors for one connected component
 // does not set the values
-void
-ma::PGMMatcher::createSingletonFactors(const McDArray<int>& connectedComp,
-                                       vector<Factor>& singletonFactorList) {
+void ma::PGMMatcher::createSingletonFactors(
+    const McDArray<int>& connectedComp,
+    std::vector<Factor>& singletonFactorList) {
 
     for (int i = 0; i < connectedComp.size(); i++) {
         McDArray<int> assigmentsForIthVariable;
@@ -310,7 +310,7 @@ void ma::PGMMatcher::handleEvidenceAssignment(const int varLabel,
 
 void
 ma::PGMMatcher::fillSingletonVals(const McDMatrix<int>& variableAssignmentMat,
-                                  vector<Factor>& singletonFactors,
+                                  std::vector<Factor>& singletonFactors,
                                   ConnectedFactorGraph& graph) {
 
     while (!singletonFactors.empty()) {
@@ -468,7 +468,7 @@ void ma::PGMMatcher::getAssignedValuesForVar(
 
 // This method sets the mutual exclusive constraint for each pair factor
 void ma::PGMMatcher::fillPairVals(const McDMatrix<int>& variableAssignmentMat,
-                                  vector<Factor>& pairFactors,
+                                  std::vector<Factor>& pairFactors,
                                   ConnectedFactorGraph& graph) {
 
     while (!pairFactors.empty()) {
@@ -675,9 +675,9 @@ bool ma::PGMMatcher::matchPoints(
         opts.set("verbose", (size_t)0);
     else
         opts.set("verbose", (size_t)3);
-    opts.set("updates", string("SEQMAX"));
+    opts.set("updates", std::string("SEQMAX"));
     opts.set("logdomain", (bool)true);
-    opts.set("inference", string("MAXPROD"));
+    opts.set("inference", std::string("MAXPROD"));
     opts.set("damping", (Real)damping);
 
     DAIAlgFG* infAlgorithm;
@@ -756,7 +756,7 @@ ma::PGMMatcher::getMaxMessageDiffs(DAIAlgFG* infAlgorithm,
             if (oldMaxMarginal == end) {
                 std::vector<Factor> newVector;
                 newVector.push_back(curMaxMarginal);
-                maxMarginals.insert(pair<int, std::vector<Factor> >(
+                maxMarginals.insert(std::pair<int, std::vector<Factor> >(
                     curVars[j].label(), newVector));
             } else {
                 std::vector<Factor>& oldMarginals = (*oldMaxMarginal).second;
@@ -821,10 +821,6 @@ void ma::PGMMatcher::getMaxProbAssignments(const DAIAlgFG* ia,
             pairs.append(pair);
         }
     }
-    // outputSingleFactorValues(graph);
-
-    //    std::vector<std::size_t> maxes= ia.findMaximum();
-    //    vector<std::size_t>::iterator it=maxes.begin();
 }
 
 void

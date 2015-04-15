@@ -17,7 +17,6 @@
 #include <dai/bp.h>
 #include <dai/factor.h>
 
-using namespace std;
 using namespace dai;
 
 // get a point on a sg edge that is maxDist from first point in edgePoints list
@@ -140,8 +139,8 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
     while (vertex >= 0) {
         pointSet1.append(sg->getVertexCoords(vertex));
         points1Indices.append(vertex);
-        cout << "\nlabel " << points1Indices.size() - 1 << " maps to "
-             << vertex;
+        std::cout << "\nlabel " << points1Indices.size() - 1 << " maps to "
+                  << vertex;
         vertex = iter1.vertices.nextSelected();
     }
     SpatialGraphSelection::Iterator iter2(matchingSelection2);
@@ -150,8 +149,8 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
     while (vertex >= 0) {
         pointSet2.append(sg->getVertexCoords(vertex));
         points2Indices.append(vertex);
-        cout << "\nstate " << points2Indices.size() - 1 << " maps to "
-             << vertex;
+        std::cout << "\nstate " << points2Indices.size() - 1 << " maps to "
+                  << vertex;
         vertex = iter2.vertices.nextSelected();
     }
 
@@ -159,22 +158,22 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
     McDArray<McVec3f> directions2;
     McDArray<McVec2i> evidenceDummy;
 
-    cout << "getting dirs\n";
+    std::cout << "getting dirs\n";
     getDirections(matchingSelection1, sg, directions1);
     getDirections(matchingSelection2, sg, directions2);
 
-    cout << "got dirs\n";
+    std::cout << "got dirs\n";
     mtalign::PGMPairWeightsParams config;
     makeDefaultConfig(config);
     mtalign::PGMPairWeights ppwc(pointSet1, pointSet2, directions1, directions2,
-                              config);
+                                 config);
     mtalign::PGMMatcher bfom(pointSet1, pointSet2, directions1, directions2,
                              evidenceDummy, ppwc, 150);
 
-    vector<mtalign::ConnectedFactorGraph> graphs;
+    std::vector<mtalign::ConnectedFactorGraph> graphs;
 
     bfom.getAllConnectedComponents(graphs);
-    cout << "got " << graphs.size() << " conn comp\n";
+    std::cout << "got " << graphs.size() << " conn comp\n";
 
     McDArray<int> notConverged;
     McDArray<int> ambiguousAssignments;
@@ -183,10 +182,10 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
     for (unsigned int l = 0; l < graphs.size(); l++) {
         FactorGraph fg(graphs[l].factors);
 
-        ofstream dotfile;
+        std::ofstream dotfile;
         McString x;
         char* v = x.printf("%s-group%d.dot", filename.dataPtr(), l);
-        cout << "\n*********************************************\n\n" << v;
+        std::cout << "\n*********************************************\n\n" << v;
         dotfile.open(v);
         fg.printDot(dotfile);
         dotfile.close();
@@ -204,7 +203,7 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
                 ambiguousAssignments, marginalDifferenceAmbiguities,
                 messageDiffs, beliefEntropies);
 
-            cout << "\nconverged:" << converged;
+            std::cout << "\nconverged:" << converged;
             if (!converged) {
                 notConverged.append(l);
             }
@@ -214,14 +213,14 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
 
             // map pairs to indices:
             for (int h = 0; h < matchedPointPairs.size(); h++) {
-                cout << "\n iter matches";
+                std::cout << "\n iter matches";
                 if (matchedPointPairs[h].y >= 0) {
                     pairs.append(
                         McVec2i(points1Indices[matchedPointPairs[h].x],
                                 points2Indices[matchedPointPairs[h].y]));
-                    cout << "\nAdd pair "
-                         << points1Indices[matchedPointPairs[h].x] << " - "
-                         << points2Indices[matchedPointPairs[h].y];
+                    std::cout << "\nAdd pair "
+                              << points1Indices[matchedPointPairs[h].x] << " - "
+                              << points2Indices[matchedPointPairs[h].y];
                 }
             }
         }
@@ -449,7 +448,7 @@ TEST(mtalign__PGMPairMatcherTest, simpleFactorGraph_GUI_E5MS) {
     EXPECT_EQ(checkSameMove(p2p3FacMove), 1);
 
     // create factor graph
-    vector<Factor> pFactors;
+    std::vector<Factor> pFactors;
     pFactors.push_back(p1Fac);
     pFactors.push_back(p2Fac);
     pFactors.push_back(p3Fac);
@@ -458,15 +457,15 @@ TEST(mtalign__PGMPairMatcherTest, simpleFactorGraph_GUI_E5MS) {
     pFactors.push_back(p2p3Fac);
 
     FactorGraph pNetwork(pFactors);
-    cout << "\n is tree " << pNetwork.isTree() << "\n";
+    std::cout << "\n is tree " << pNetwork.isTree() << "\n";
 
     PropertySet opts;
-    opts.set("maxiter", string("10000"));  // Maximum number of iterations
-    opts.set("tol", string("1.e-8"));      // Tolerance for convergence
-    opts.set("verbose", string("1"));  // Verbosity (amount of output generated)
-    BP ia(pNetwork,
-          opts("updates", string("SEQMAX"))("logdomain", false)(
-              "inference", string("MAXPROD"))("damping", string("0.0")));
+    opts.set("maxiter", std::string("10000"));
+    opts.set("tol", std::string("1.e-8"));
+    opts.set("verbose", std::string("1"));
+    BP ia(pNetwork, opts("updates", std::string("SEQMAX"))("logdomain", false)(
+                        "inference",
+                        std::string("MAXPROD"))("damping", std::string("0.0")));
     ia.init();
     ia.run();
 
@@ -476,16 +475,16 @@ TEST(mtalign__PGMPairMatcherTest, simpleFactorGraph_GUI_E5MS) {
     x *= p1p2Fac;
     x *= p1p3Fac;
     x *= p2p3Fac;
-    cout << "\nmax:" << x.max();
+    std::cout << "\nmax:" << x.max();
     float maxVal = x.max();
     EXPECT_FLOAT_EQ(0.064, maxVal);
 
     Factor beliefP1 = ia.belief(p1);
     Factor beliefP2 = ia.belief(p2);
     Factor beliefP3 = ia.belief(p3);
-    cout << "\n beliefP1" << beliefP1;
-    cout << "\n beliefP2" << beliefP2;
-    cout << "\n beliefP3" << beliefP3;
+    std::cout << "\n beliefP1" << beliefP1;
+    std::cout << "\n beliefP2" << beliefP2;
+    std::cout << "\n beliefP3" << beliefP3;
 
     EXPECT_FLOAT_EQ(1, checkDiagOff(p1p2Fac));
     EXPECT_FLOAT_EQ(1, checkDiagOff(p1p3Fac));
@@ -494,24 +493,24 @@ TEST(mtalign__PGMPairMatcherTest, simpleFactorGraph_GUI_E5MS) {
     // now: clamp one value, see if it is a tree!
 
     FactorGraph clampedGraph = pNetwork.clamped(0, 1);
-    cout << "\nafter clamping  is tree " << clampedGraph.isTree() << "\n";
+    std::cout << "\nafter clamping  is tree " << clampedGraph.isTree() << "\n";
 
-    BP iaClamped(
-        clampedGraph,
-        opts("updates", string("SEQMAX"))("logdomain", false)(
-            "inference", string("MAXPROD"))("damping", string("0.001")));
+    BP iaClamped(clampedGraph,
+                 opts("updates", std::string("SEQMAX"))("logdomain", false)(
+                     "inference",
+                     std::string("MAXPROD"))("damping", std::string("0.001")));
 
     iaClamped.init();
     iaClamped.run();
     std::vector<std::size_t> maxesClamped = iaClamped.findMaximum();
-    vector<std::size_t>::iterator itClamped = maxesClamped.begin();
+    std::vector<std::size_t>::iterator itClamped = maxesClamped.begin();
     for (; itClamped < maxesClamped.end(); itClamped++) {
-        cout << "\nclamped:" << *itClamped;
+        std::cout << "\nclamped:" << *itClamped;
     }
     Factor beliefP1Clamped = iaClamped.belief(p1);
     Factor beliefP2Clamped = iaClamped.belief(p2);
     Factor beliefP3Clamped = iaClamped.belief(p3);
-    cout << "\n beliefP1" << beliefP1Clamped;
-    cout << "\n beliefP2" << beliefP2Clamped;
-    cout << "\n beliefP3" << beliefP3Clamped;
+    std::cout << "\n beliefP1" << beliefP1Clamped;
+    std::cout << "\n beliefP2" << beliefP2Clamped;
+    std::cout << "\n beliefP3" << beliefP3Clamped;
 }

@@ -11,22 +11,6 @@
 #include <hxalignmicrotubules/mtalign/SliceSelector.h>
 #include <hxalignmicrotubules/mtalign/data.h>
 
-// Without using `namespace std`, the following tests break:
-//
-//     mtalign__projectTestWithTestingData.shouldComputeBaseline/4,
-//     where GetParam() = { filename: 'spatialgraph/fullp0p1.am',
-//     projectionType: 'Fit degree 1' }
-//
-//     mtalign__projectTestWithTestingData.shouldComputeBaseline/5,
-//     where GetParam() = { filename: 'spatialgraph/fullp0p1.am',
-//     projectionType: 'Fit degree 2' }
-//
-//     mtalign__projectTestWithTestingData.shouldComputeBaseline/6,
-//     where GetParam() = { filename: 'spatialgraph/fullp0p1.am',
-//     projectionType: 'Fit degree 3' }
-//
-using namespace std;
-
 namespace ma = mtalign;
 
 static void selectSliceByIdx(const ma::SliceSelector& sections,
@@ -269,7 +253,7 @@ projectToPlaneFit(const HxSpatialGraph* sg,
             for (int c = 0; c < matDim; ++c) {
                 double sum = 0.0;
                 for (int j = 0; j < m; ++j) {
-                    sum += pow(edgePoints[j][2], c + r);
+                    sum += std::pow(edgePoints[j][2], c + r);
                 }
                 mat[r][c] = sum;
                 mat[r + matDim][c + matDim] = sum;
@@ -285,8 +269,9 @@ projectToPlaneFit(const HxSpatialGraph* sg,
             xy[i] = 0.0f;
             xy[i + matDim] = 0.0f;
             for (int j = 0; j < m; ++j) {
-                xy[i] += pow(edgePoints[j][2], i) * edgePoints[j][0];
-                xy[i + matDim] += pow(edgePoints[j][2], i) * edgePoints[j][1];
+                xy[i] += std::pow(edgePoints[j][2], i) * edgePoints[j][0];
+                xy[i + matDim] +=
+                    std::pow(edgePoints[j][2], i) * edgePoints[j][1];
             }
         }
 
@@ -299,8 +284,8 @@ projectToPlaneFit(const HxSpatialGraph* sg,
 
         McVec3f proj(0.0f, 0.0f, planeZ);
         for (int i = 0; i < matDim; ++i) {
-            proj[0] += ab[i] * pow(planeZ, i);
-            proj[1] += ab[i + matDim] * pow(planeZ, i);
+            proj[0] += ab[i] * std::pow(planeZ, i);
+            proj[1] += ab[i + matDim] * std::pow(planeZ, i);
         }
 
         bool ortho = false;
@@ -330,8 +315,8 @@ projectToPlaneFit(const HxSpatialGraph* sg,
                 if (edgePoints[i][2] > maxZ)
                     maxZ = edgePoints[i][2];
             }
-            minZ = min(planeZ, minZ);
-            maxZ = max(planeZ, maxZ);
+            minZ = std::min(planeZ, minZ);
+            maxZ = std::max(planeZ, maxZ);
             int const numSteps = 50;
             float hStep = (maxZ - minZ) / float(numSteps - 1);
             if (fabs(hStep) < 0.01) {
@@ -347,8 +332,8 @@ projectToPlaneFit(const HxSpatialGraph* sg,
             for (float h = minZ; h <= maxZ; h += hStep) {
                 McVec3f proj(0.0f, 0.0f, h);
                 for (int i = 0; i < matDim; ++i) {
-                    proj[0] += ab[i] * pow(h, i);
-                    proj[1] += ab[i + matDim] * pow(h, i);
+                    proj[0] += ab[i] * std::pow(h, i);
+                    proj[1] += ab[i + matDim] * std::pow(h, i);
                 }
             }
         }

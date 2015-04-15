@@ -263,27 +263,35 @@ and create a squashed commit:
 
     printf '\n%s\n\n' "Branch '${branch}' is now at:" && git show -s ${branch}
 
+# Useful commands
+
+You can call the GitHub API to test how GitHub will translate a markdown file:
+
+    file=README-technical.md
+    curl --data-binary @$file -H "Content-Type:text/plain" -s \
+        https://api.github.com/markdown/raw >${file}.html
+
 # Changelog
 
 2015-02: The sign of the threshold for filtering lines that are nearly parallel
 to the section boundary (parameter `Remove angel lower` in GUI) has been fixed
-[^8f93cb].  The change caused minor differences in the test results that should
+[8f93cb].  The change caused minor differences in the test results that should
 not matter in practice.
 
-[^8f93cb]: zib-amira@8f93cbf9ffa9e9808562677e74eef2a1f3c56191 'mtalign: fix sign
-in angleToPlaneFilter; polish EndPointParams 2/n'
+ - [8f93cb]: zib-amira@8f93cbf9ffa9e9808562677e74eef2a1f3c56191 'mtalign: fix
+   sign in angleToPlaneFilter; polish EndPointParams 2/n'
 
 
 2015-02: The Fisher-Mises normalization factor for the linear CPD has been
-changed to match the definition in the paper [^d04065].  The change did not
+changed to match the definition in the paper [d04065].  The change did not
 affect any tests.
 
-[^d04065]: zib-amira@d040657d21079cf70bcedc9cb21a9c8947d01ac0 'mtalign: change
-Fisher-Mises normalization factor in linear CPD to match paper'
+ - [d04065]: zib-amira@d040657d21079cf70bcedc9cb21a9c8947d01ac0 'mtalign: change
+   Fisher-Mises normalization factor in linear CPD to match paper'
 
 
 2014-06: The normalization factor for the elastic CPD has been changed to match
-the definition of the Fisher-Mises distribution [^c4c577].  The change caused
+the definition of the Fisher-Mises distribution [c4c577].  The change caused
 minor differences in the test results (see below).  The differences should not
 matter in practice.
 
@@ -300,5 +308,5 @@ matter in practice.
          New: 45
          Old: 42
 
-[^c4c577]: zib-amira:c4c57770265640acdcd47e7e025a8f8b9ecdaaf2
-CoherentPointDriftNLFisherMises: Fix fisherMises() normalization factor
+ - [c4c577]: zib-amira:c4c57770265640acdcd47e7e025a8f8b9ecdaaf2
+   CoherentPointDriftNLFisherMises: Fix fisherMises() normalization factor

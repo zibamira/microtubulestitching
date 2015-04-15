@@ -15,7 +15,8 @@ namespace mtalign {
 ///  with a `QString` for each line (without terminating newline).
 ///
 /// `Context` will probably be extended to also support `McProgressInterface`.
-struct Context { Context();
+struct Context {
+    Context();
 
     /// `print_t` is the type of a low-level print function.
     typedef boost::function<void (QString)> print_t;
