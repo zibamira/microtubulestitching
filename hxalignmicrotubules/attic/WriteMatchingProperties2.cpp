@@ -2,8 +2,8 @@
 
 #include <QString>
 
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphSelection.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphSelection.h>
 #include <mclib/McException.h>
 
 #include <hxalignmicrotubules/mtalign/PGMMatcher.h>
@@ -16,10 +16,10 @@ HX_INIT_CLASS(WriteMatchingProperties2, HxCompModule);
 
 WriteMatchingProperties2::WriteMatchingProperties2()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portDistanceThreshold(this, "dist"),
-      portProjectedDistanceThreshold(this, "projDist"),
-      portAngleThreshold(this, "angle"),
-      portAction(this, "action") {
+      portDistanceThreshold(this, "dist", tr("Dist")),
+      portProjectedDistanceThreshold(this, "projDist", tr("Porj Dist")),
+      portAngleThreshold(this, "angle", tr("Angle")),
+      portAction(this, "action", tr("Action")) {
     mSelectionHelper = NULL;
     mOutputNamesMap.insert(std::pair<std::string, int>("3dDistance", 0));
     mOutputNamesMap.insert(std::pair<std::string, int>("ProjectedDistance", 1));
@@ -44,13 +44,8 @@ void WriteMatchingProperties2::initPairMap() {
     EdgeVertexAttribute* att = dynamic_cast<EdgeVertexAttribute*>(
         graph->findAttribute(HxSpatialGraph::VERTEX, attr));
     if (!att) {
-        const QString msg =
-            QString("Could not find node attribute '%1'.").arg(attr);
-#ifdef HX_AMIRA5_COMPAT
-        mcthrow(qPrintable(msg));
-#else
+        const QString msg = QString("Could not find node attribute '%1'.").arg(attr);
         mcthrow(msg);
-#endif
     }
     std::map<int, int> labelToVertexMap;
 
@@ -291,7 +286,7 @@ WriteMatchingProperties2::getResultSpreadSheet(const std::string& outputName) {
     SpreadSheetWrapper* resultSpreadSheet = dynamic_cast<SpreadSheetWrapper*>(
         getResult(mOutputNamesMap[outputName]));
     if (resultSpreadSheet == NULL) {
-        resultSpreadSheet = new SpreadSheetWrapper();
+        resultSpreadSheet = SpreadSheetWrapper::createInstance();
         setResult(mOutputNamesMap[outputName], resultSpreadSheet);
         resultSpreadSheet->setLabel(outputName.c_str());
     }

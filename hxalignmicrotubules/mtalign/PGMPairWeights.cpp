@@ -2,6 +2,7 @@
 
 #include <mclib/McPlane.h>
 #include <mclib/McLine.h>
+#include <mclib/McMath.h>
 
 namespace ma = mtalign;
 

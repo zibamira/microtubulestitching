@@ -25,8 +25,6 @@ class WriteMatchingProperties2 : public HxCompModule {
     HX_HEADER(WriteMatchingProperties2);
 
   public:
-    WriteMatchingProperties2();
-    ~WriteMatchingProperties2();
 
     HxPortFloatTextN portDistanceThreshold;
     HxPortFloatTextN portProjectedDistanceThreshold;

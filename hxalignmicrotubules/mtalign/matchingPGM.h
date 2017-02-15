@@ -1,5 +1,6 @@
 #pragma once
 
+#include <hxalignmicrotubules/api.h>
 #include <hxalignmicrotubules/mtalign/PGMPairWeights.h>
 #include <mclib/McDArray.h>
 
@@ -58,7 +59,7 @@ struct MatchingPGMParams {
 /// specified by `MatchingPGMParams`.  `params.evidence` contains fixed
 /// user-defined assignments as pairs of 'ref' and 'trans' indices into the
 /// `FacingPointSets`.
-MatchingPGM matchingPGM(const FacingPointSets& pts,
-                        const MatchingPGMParams& params, Context* ctx = 0);
+HXALIGNMICROTUBULES_API MatchingPGM matchingPGM(const FacingPointSets& pts,
+                                                const MatchingPGMParams& params, Context* ctx = 0);
 
 }  // namespace mtalign.

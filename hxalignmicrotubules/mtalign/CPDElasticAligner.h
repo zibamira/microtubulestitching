@@ -3,7 +3,7 @@
 #include <boost/function.hpp>
 
 #include <mclib/McDArray.h>
-#include <mclib/McDMatrix.h>
+#include <mclib/internal/McDMatrix.h>
 
 #include <hxalignmicrotubules/mtalign/Context.h>
 #include <hxalignmicrotubules/mtalign/cpd.h>

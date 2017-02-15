@@ -2,7 +2,7 @@
 
 #include <coin/IpTNLP.hpp>
 #include <hxalignmicrotubules/mtalign/CPDLinearAlignerDerivatives.h>
-#include <mclib/McDVector.h>
+#include <mclib/internal/McDVector.h>
 
 namespace mtalign {
 

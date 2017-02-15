@@ -17,7 +17,7 @@ class HXALIGNMICROTUBULES_API HxRotateSpatialGraphStackSliceAndCDP
     HX_HEADER(HxRotateSpatialGraphStackSliceAndCDP);
 
   public:
-    HxRotateSpatialGraphStackSliceAndCDP();
+
     virtual void update();
     virtual void compute();
 
@@ -34,7 +34,6 @@ class HXALIGNMICROTUBULES_API HxRotateSpatialGraphStackSliceAndCDP
     HxPortDoIt portAction;
 
   protected:
-    ~HxRotateSpatialGraphStackSliceAndCDP();
 
     void rotateSlice(HxSpatialGraph* graph, const double angle);
 };

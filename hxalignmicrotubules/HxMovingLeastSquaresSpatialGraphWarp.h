@@ -7,7 +7,7 @@
 #include <hxcore/HxPortFloatSlider.h>
 #include <hxcore/HxPortMultiMenu.h>
 #include <hxfield/HxUniformVectorField3.h>
-#include <mclib/McVec2d.h>
+#include <mclib/McVec2.h>
 
 #include <hxalignmicrotubules/api.h>
 
@@ -39,8 +39,6 @@ class HXALIGNMICROTUBULES_API HxMovingLeastSquaresSpatialGraphWarp
         std::vector<int> lowerTransformSlices;
     };
 
-    HxMovingLeastSquaresSpatialGraphWarp();
-
     HxPortMultiMenu portMethod;
     HxPortFloatSlider portAlpha;
     HxPortDoIt portAction;
@@ -70,7 +68,6 @@ class HXALIGNMICROTUBULES_API HxMovingLeastSquaresSpatialGraphWarp
                                         MovingLeastSquares& deformation);
 
   protected:
-    ~HxMovingLeastSquaresSpatialGraphWarp();
     HxSpatialGraph* createOutputDataSet();
     HxUniformVectorField3* createOutputVectorDataSet();
     void generateOrderOfDeformationSimple(

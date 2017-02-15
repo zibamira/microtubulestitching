@@ -5,14 +5,14 @@
 #include <QTime>
 
 #include <hxcore/HxObjectPool.h>
-#include <hxcore/HxWorkArea.h>
-#include <hxneuroneditor/HxNeuronEditorSubApp.h>
-#include <hxspatialgraph/EdgeVertexAttribute.h>
-#include <hxspatialgraph/HierarchicalLabels.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphOperationSet.h>
+#include <hxcore/internal/HxWorkArea.h>
+#include <hxneuroneditor/internal/HxNeuronEditorSubApp.h>
+#include <hxspatialgraph/internal/EdgeVertexAttribute.h>
+#include <hxspatialgraph/internal/HierarchicalLabels.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphOperationSet.h>
 #include <mclib/McDArray.h>
-#include <mclib/McString.h>
+#include <mclib/internal/McString.h>
 
 #include <hxalignmicrotubules/MicrotubuleTransformOperation.h>
 #include <hxalignmicrotubules/MovingLeastSquares.h>
@@ -243,11 +243,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
             .arg(mSelectionHelper.getSliceAttributeValueFromIndex(i - 1))
             .arg(mSelectionHelper.getSliceAttributeValueFromIndex(i));
 
-#ifdef HX_AMIRA5_COMPAT
-        theWorkArea->setProgressInfo("%s", qPrintable(info));
-#else
         theWorkArea->setProgressInfo(info);
-#endif
         theWorkArea->setProgressValue(
             float(i) / float(mSelectionHelper.getNumSlices() - 1));
 
@@ -279,7 +275,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
             spreadSheet->addEntry("CPDResults", "note", row.dataPtr(),
                                   reason.getString());
 
-            result.transformMatrix = McMat4f::identity();
+            result.transformMatrix = McMat4f::IDENTITY;
 
             // Create a moving-least-squares identity transform by mapping the
             // ps to itself, so that the downstream pipeline should work
@@ -295,7 +291,7 @@ MicrotubuleSpatialGraphAligner::warpAll(HxNeuronEditorSubApp* editor,
         }
     } else {
         HxParamBundle* bundle =
-            mGraph->parameters.bundle("CPDTransformLandmarks", false);
+            mGraph->parameters.getBundle("CPDTransformLandmarks", false);
         if (bundle != 0) {
             theMsg->printf("No nl transform applied! Was transformed already.");
             theWorkArea->stopWorking();
@@ -324,7 +320,7 @@ void MicrotubuleSpatialGraphAligner::addWarpPointsToParams(
     const ma::MLSParams& mlsParams, const int sliceNum) {
 
     HxParamBundle* bundle =
-        mGraph->parameters.bundle("CPDTransformLandmarks", false);
+        mGraph->parameters.getBundle("CPDTransformLandmarks", false);
     mcassert(bundle);
     McString sliceNums;
     sliceNums.printf("Slices%d-%d", sliceNum, sliceNum + 1);
@@ -403,16 +399,12 @@ MicrotubuleSpatialGraphAligner::alignAllOrPair(HxNeuronEditorSubApp* editor,
     McHandle<SpreadSheetWrapper> spreadSheet = getEvaluationSpreadsheet();
 
     for (int i = 1; i < mSelectionHelper.getNumSlices(); ++i) {
-        McMat4f transMat = McMat4f::identity();
+        McMat4f transMat = McMat4f::IDENTITY;
         if (transSliceNum == i || transSliceNum == -1) {
             const QString info = QString("Aligning slices %1-%2")
                 .arg(mSelectionHelper.getSliceAttributeValueFromIndex(i - 1))
                 .arg(mSelectionHelper.getSliceAttributeValueFromIndex(i));
-#ifdef HX_AMIRA5_COMPAT
-            theWorkArea->setProgressInfo("%s", qPrintable(info));
-#else
             theWorkArea->setProgressInfo(info);
-#endif
             theWorkArea->setProgressValue(
                 float(i) / float(mSelectionHelper.getNumSlices() - 1));
             alignPairAndTestScaling(i - 1, i, transMat, editor, spreadSheet);
@@ -439,7 +431,7 @@ void MicrotubuleSpatialGraphAligner::alignPairAndTestScaling(
     HxNeuronEditorSubApp* editor, McHandle<SpreadSheetWrapper> spreadSheet) {
 
     float scaleFactor = mScaleTestMin;
-    McMat4f bestMatrix = McMat4f::identity();
+    McMat4f bestMatrix = McMat4f::IDENTITY;
     float bestScaleFactor = 1;
     AlignmentResults bestAlignmentResults;
     bestAlignmentResults.score = 0;
@@ -457,7 +449,7 @@ void MicrotubuleSpatialGraphAligner::alignPairAndTestScaling(
             QTime startTime = QTime::currentTime();
 
             // apply z-transform
-            McMat4f transMatrix = McMat4f::identity();
+            McMat4f transMatrix = McMat4f::IDENTITY;
             transMatrix.setTranslate(McVec3f(0, 0, varyGap));
             applyTransform(transMatrix, transSliceNum, 1);
 
@@ -478,7 +470,7 @@ void MicrotubuleSpatialGraphAligner::alignPairAndTestScaling(
             }
 
             // undo the translation
-            transMatrix = McMat4f::identity();
+            transMatrix = McMat4f::IDENTITY;
             transMatrix.setTranslate(McVec3f(0, 0, -1 * varyGap));
             applyTransform(transMatrix, transSliceNum, 1);
             QTime endTime = QTime::currentTime();
@@ -493,7 +485,7 @@ void MicrotubuleSpatialGraphAligner::alignPairAndTestScaling(
     }
     McMat4f finalMatrix(bestScaleFactor, 0, 0, 0, 0, bestScaleFactor, 0, 0, 0,
                         0, /*zScaling=*/1.0, 0, 0, 0, 0, 1.0);
-    McMat4f transMatrix = McMat4f::identity();
+    McMat4f transMatrix = McMat4f::IDENTITY;
     transMatrix.setTranslate(McVec3f(0, 0, bestGapVariation));
     finalMatrix.multRight(transMatrix);
     finalMatrix.multRight(bestMatrix);
@@ -532,7 +524,7 @@ void MicrotubuleSpatialGraphAligner::rewriteBinaryLabel(
 
     EdgeVertexAttribute* att =
         dynamic_cast<EdgeVertexAttribute*>(mGraph->addAttribute(
-            labelName, HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            labelName, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     mGraph->addNewLabelGroup(labelName, false, true);
 
     HierarchicalLabels* labelGroup = mGraph->getLabelGroup(labelName);
@@ -681,7 +673,7 @@ McMat4f MicrotubuleSpatialGraphAligner::alignNonPGM(
     const ma::Matching matching =
         useBestMatching
             ? matchingTwoStepBest(pts, cliqueParams, weightConfig, algo)
-            : matchingDirect(pts, McMat4f::identity(), weightConfig, algo);
+            : matchingDirect(pts, McMat4f::IDENTITY, weightConfig, algo);
 
     alignmentResults.matchedRefPointIds = matching.matchedRefPointIds;
     alignmentResults.matchedTransPointIds = matching.matchedTransPointIds;
@@ -690,7 +682,7 @@ McMat4f MicrotubuleSpatialGraphAligner::alignNonPGM(
         (float)(alignmentResults.refVertexSelection.getNumSelectedVertices());
 
     if (matching.matchedRefPointIds.size() == 0) {
-        return McMat4f::identity();
+        return McMat4f::IDENTITY;
     }
     return fitTransform(pts, matching, asTransformType(mTransformType));
 }
@@ -732,7 +724,7 @@ McMat4f MicrotubuleSpatialGraphAligner::alignPGM(
         (float)(alignmentResults.refVertexSelection.getNumSelectedVertices());
 
     if (matching.matchedRefPointIds.size() == 0) {
-        return McMat4f::identity();
+        return McMat4f::IDENTITY;
     }
     const ma::Matching m = { matching.matchedRefPointIds,
                              matching.matchedTransPointIds };
@@ -790,7 +782,7 @@ void MicrotubuleSpatialGraphAligner::createPointMatchingAttribute(
                 mGraph->findAttribute(HxSpatialGraph::VERTEX, attName));
             if (!att) {
                 att = dynamic_cast<EdgeVertexAttribute*>(mGraph->addAttribute(
-                    attName, HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+                    attName, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
                 mcassert(att);
                 // Set all vertices to unused.
                 for (int i = 0; i < att->size(); ++i) {
@@ -994,20 +986,20 @@ HxParameter*
 MicrotubuleSpatialGraphAligner::getTransformParameter(const int slice) const {
 
     HxParamBundle* transformInfoPB =
-        mGraph->parameters.bundle("TransformInfo", 0);
+        mGraph->parameters.getBundle("TransformInfo", 0);
     if (!transformInfoPB) {
         theMsg->printf(
             "Warning: could not find TransformInfo parameter bundle");
         return 0;
     }
 
-    const char* attStr;
+    QString attStr;
     if (!transformInfoPB->findString("AlignAttribute", attStr)) {
         theMsg->printf("Warning: could not find AlignAttribute");
         return 0;
     }
 
-    HxParamBundle* slicePB = transformInfoPB->bundle(slice);
+    HxParamBundle* slicePB = transformInfoPB->getBundle(slice);
     if (slicePB) {
         int v;
         if (slicePB->findNum("Value", v)) {
@@ -1028,10 +1020,10 @@ McMat4f MicrotubuleSpatialGraphAligner::getTransform(const int sliceNum) const {
     HxParameter* param = getTransformParameter(sliceNum);
     McMat4f mat;
     if (!param) {
-        mat.makeIdentity();
+        mat = McMat4f::IDENTITY;
         theMsg->printf("Error: no transformation found for slice %d.",
                        sliceNum);
-    } else if (param->dim() == 16) {
+    } else if (param->getDimension() == 16) {
         double res[16];
         param->getReal(res);
         float* ptr = &mat[0][0];
@@ -1039,7 +1031,7 @@ McMat4f MicrotubuleSpatialGraphAligner::getTransform(const int sliceNum) const {
             ptr[i] = float(res[i]);
         }
     } else {
-        mat.makeIdentity();
+        mat = McMat4f::IDENTITY;
         theMsg->printf("Error: no transformation found for slice %d.",
                        sliceNum);
     }
@@ -1055,55 +1047,55 @@ MicrotubuleSpatialGraphAligner::getSliceZPosition(const int sliceNum) const {
 void MicrotubuleSpatialGraphAligner::setSliceZPosition(
     const int sliceNum, const float newZ, HxNeuronEditorSubApp* editor) {
     float oldZ = getSliceZPosition(sliceNum);
-    McMat4f transform = McMat4f::identity();
+    McMat4f transform = McMat4f::IDENTITY;
     McVec3f translation(0.0f, 0.0f, newZ - oldZ);
     transform.setTranslate(translation);
     applyTransform(transform, sliceNum, -1, editor);
 }
 
 bool MicrotubuleSpatialGraphAligner::hasTransformInfo() const {
-    return mGraph->parameters.bundle("TransformInfo", 0);
+    return mGraph->parameters.getBundle("TransformInfo", 0);
 }
 
 McString MicrotubuleSpatialGraphAligner::getTransformInfoAttribute() const {
     HxParamBundle* transformInfoPB =
-        mGraph->parameters.bundle("TransformInfo", 0);
+        mGraph->parameters.getBundle("TransformInfo", 0);
     if (!transformInfoPB) {
         theMsg->printf(
             "Warning: could not find TransformInfo parameter bundle");
         return 0;
     }
 
-    const char* attStr;
+    QString attStr;
     if (!transformInfoPB->findString("AlignAttribute", attStr)) {
         theMsg->printf("Warning: could not find AlignAttribute");
         return 0;
     }
-    return McString(attStr);
+    return qPrintable(attStr);
 }
 
 McString
 MicrotubuleSpatialGraphAligner::getNameOfIthSlice(const int sliceNum) const {
     HxParamBundle* transformInfoPB =
-        mGraph->parameters.bundle("TransformInfo", 0);
+        mGraph->parameters.getBundle("TransformInfo", 0);
     if (!transformInfoPB) {
         theMsg->printf(
             "Warning: could not find TransformInfo parameter bundle");
         return 0;
     }
-    if (transformInfoPB->nBundles() <= sliceNum) {
+    if (transformInfoPB->getNumberOfBundles() <= sliceNum) {
         theMsg->printf("Warning: Slice %d does not exist", sliceNum);
         return 0;
     }
-    HxParamBundle* sliceParameters = transformInfoPB->bundle(sliceNum);
+    HxParamBundle* sliceParameters = transformInfoPB->getBundle(sliceNum);
 
-    const char* nameString = NULL;
+    QString nameString;
     if (!sliceParameters->findString("FileName", nameString)) {
         theMsg->printf("Warning: Cannot find slice name");
         return 0;
     }
 
-    McString filename(nameString);
+    McString filename(qPrintable(nameString));
     McDArray<McString> substrings;
     char slash = '/';
     filename.explode(slash, substrings);
@@ -1121,11 +1113,11 @@ void MicrotubuleSpatialGraphAligner::getSliceSelection(
 McHandle<SpreadSheetWrapper>
 MicrotubuleSpatialGraphAligner::getEvaluationSpreadsheet() {
 
-    McHandle<SpreadSheetWrapper> resultSpreadSheet = new SpreadSheetWrapper();
+    McHandle<SpreadSheetWrapper> resultSpreadSheet = SpreadSheetWrapper::createInstance();
     theObjectPool->addObject(resultSpreadSheet);
     McString label(mGraph->getLabel());
     label += "-alignResults";
-    resultSpreadSheet->setLabel(label);
+    resultSpreadSheet->setLabel(label.getString());
     return resultSpreadSheet;
 }
 
@@ -1228,14 +1220,14 @@ void MicrotubuleSpatialGraphAligner::addLabelForUnmatched(
     if (!unmatchedVertex)
         unmatchedVertex =
             dynamic_cast<EdgeVertexAttribute*>(mGraph->addAttribute(
-                "Unmatched", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+                "Unmatched", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     unmatchedVertex->clearMemory(0);
 
     EdgeVertexAttribute* unmatchedEdge = dynamic_cast<EdgeVertexAttribute*>(
         mGraph->findAttribute(HxSpatialGraph::EDGE, "Unmatched"));
     if (!unmatchedEdge)
         unmatchedEdge = dynamic_cast<EdgeVertexAttribute*>(mGraph->addAttribute(
-            "Unmatched", HxSpatialGraph::EDGE, McPrimType::mc_int32, 1));
+            "Unmatched", HxSpatialGraph::EDGE, McPrimType::MC_INT32, 1));
     unmatchedVertex->clearMemory(0);
 
     mGraph->addNewLabelGroup("Unmatched", false, true);

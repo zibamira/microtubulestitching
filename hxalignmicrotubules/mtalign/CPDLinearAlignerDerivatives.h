@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mclib/McDMatrix.h>
+#include <mclib/internal/McDMatrix.h>
 
 namespace mtalign {
 

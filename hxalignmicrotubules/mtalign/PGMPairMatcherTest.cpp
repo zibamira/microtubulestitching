@@ -2,13 +2,13 @@
 
 #include <fstream>
 
-#include <gtest/gtest.h>
+#include <gtest/internal/gtest.h>
 #include <hxcore/HxObjectPool.h>
-#include <hxcore/TestingData.h>
+#include <hxcore/internal/TestingData.h>
 #include <hxcore/HxResource.h>
-#include <hxcore/TestingObjectPoolCleaner.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <mclib/TestingDevNullRedirect.h>
+#include <hxcore/internal/TestingObjectPoolCleaner.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <mclib/internal/TestingDevNullRedirect.h>
 
 #include <dai/bipgraph.h>
 #include <dai/daialg.h>
@@ -226,14 +226,14 @@ static void getMatchings(McString filename, McDArray<McVec2i>& pairs,
         }
     }
 
-    HxSpatialGraph* dbgSG = new HxSpatialGraph();
+    HxSpatialGraph* dbgSG = HxSpatialGraph::createInstance();
     for (int i = 0; i < bfom.mCoords1.size(); i++) {
         int v1 = dbgSG->addVertex(bfom.mCoords1[i]);
         int v2 =
             dbgSG->addVertex(bfom.mCoords1[i] + bfom.mDirections1[i] * 2000);
         dbgSG->addEdge(v1, v2);
     }
-    //     HxSpatialGraph* dbgSG=new HxSpatialGraph();
+    //     HxSpatialGraph* dbgSG=HxSpatialGraph::createInstance();
     for (int i = 0; i < bfom.mCoords2.size(); i++) {
         int v1 = dbgSG->addVertex(bfom.mCoords2[i]);
         int v2 =

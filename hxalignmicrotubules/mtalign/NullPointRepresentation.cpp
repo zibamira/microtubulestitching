@@ -1,6 +1,6 @@
 #include <hxalignmicrotubules/mtalign/NullPointRepresentation.h>
 
-#include <mclib/McAssert.h>
+#include <mclib/internal/McAssert.h>
 
 namespace ma = mtalign;
 

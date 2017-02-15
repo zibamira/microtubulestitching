@@ -21,8 +21,6 @@ class HXALIGNMICROTUBULES_API HxMovingLeastSquaresTomogramWarp
     HX_HEADER(HxMovingLeastSquaresTomogramWarp);
 
   public:
-    ///
-    HxMovingLeastSquaresTomogramWarp();
 
     ///
     HxConnection portTomogram;

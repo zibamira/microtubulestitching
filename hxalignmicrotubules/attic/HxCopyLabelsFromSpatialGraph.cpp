@@ -1,6 +1,6 @@
 #include <hxalignmicrotubules/attic/HxCopyLabelsFromSpatialGraph.h>
 
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 
 #include <QString>
 
@@ -8,9 +8,9 @@ HX_INIT_CLASS(HxCopyLabelsFromSpatialGraph, HxCompModule);
 
 HxCopyLabelsFromSpatialGraph::HxCopyLabelsFromSpatialGraph(void)
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      mDoIt(this, "apply"),
-      portPairLabel(this, "LabelToCopy", 1),
-      portOtherSG(this, "otherSG", HxSpatialGraph::getClassTypeId()) {}
+      mDoIt(this, "apply", tr("Apply")),
+      portPairLabel(this, "LabelToCopy", tr("Label To Copy"), 1),
+      portOtherSG(this, "otherSG", tr("Other SG"), HxSpatialGraph::getClassTypeId()) {}
 
 HxCopyLabelsFromSpatialGraph::~HxCopyLabelsFromSpatialGraph(void) {}
 
@@ -55,14 +55,14 @@ void HxCopyLabelsFromSpatialGraph::compute(void) {
         return;
     }
 
-    if (portData.source() == NULL) {
+    if (portData.getSource() == NULL) {
         return;
     }
     // Recompute all
 
-    HxSpatialGraph* graph = dynamic_cast<HxSpatialGraph*>(portData.source());
+    HxSpatialGraph* graph = dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxSpatialGraph* otherGraph =
-        dynamic_cast<HxSpatialGraph*>(portOtherSG.source());
+        dynamic_cast<HxSpatialGraph*>(portOtherSG.getSource());
 
     if (otherGraph == NULL || graph == NULL) {
         return;
@@ -75,14 +75,14 @@ void HxCopyLabelsFromSpatialGraph::compute(void) {
         theMsg->printf("Could not find label.");
         return;
     }
-    if ((attribute->primType() != McPrimType::mc_int32)) {
+    if ((attribute->primType() != McPrimType::MC_INT32)) {
         theMsg->printf("Can only copy int labels on vertices.");
     }
     if (graph->getNumVertices() != otherGraph->getNumVertices()) {
         theMsg->printf("Number of vertices differ. Cannot copy attribute.");
     }
     EdgeVertexAttribute* copiedAtt = (EdgeVertexAttribute*)(graph->addAttribute(
-        "CopiedLabels", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+        "CopiedLabels", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     for (int i = 0; i < graph->getNumVertices(); i++)
         copiedAtt->setIntDataAtIdx(i, attribute->getIntDataAtIdx(i));
 }

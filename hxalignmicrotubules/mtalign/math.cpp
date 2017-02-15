@@ -1,8 +1,8 @@
 #include <hxalignmicrotubules/mtalign/math.h>
 
-#include <mclib/McAssert.h>
-#include <mcla/f77_blas.h>
-#include <mcla/f77_lapack.h>
+#include <mclib/internal/McAssert.h>
+#include <mcla/internal/f77_blas.h>
+#include <mcla/internal/f77_lapack.h>
 
 namespace ma = mtalign;
 

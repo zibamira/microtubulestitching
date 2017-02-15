@@ -1,7 +1,7 @@
 #pragma once
 
 #include <mclib/McHandle.h>
-#include <mclib/McString.h>
+#include <mclib/internal/McString.h>
 
 #include <hxalignmicrotubules/mtalign/PGMPairWeights.h>
 

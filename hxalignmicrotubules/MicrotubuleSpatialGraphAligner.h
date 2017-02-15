@@ -1,13 +1,9 @@
 #pragma once
 
-#include <hxspatialgraph/SpatialGraphSelection.h>
+#include <hxspatialgraph/internal/SpatialGraphSelection.h>
 #include <mclib/McHandable.h>
 
-#ifdef HX_AMIRA5_COMPAT
-#include <hxstatistics/HxSpreadSheet.h>
-#else
-#include <hxspreadsheet/HxSpreadSheet.h>
-#endif
+#include <hxspreadsheet/internal/HxSpreadSheet.h>
 
 #include <hxalignmicrotubules/mtalign.h>
 

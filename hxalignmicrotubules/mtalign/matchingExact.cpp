@@ -1,10 +1,10 @@
 #include <hxalignmicrotubules/mtalign/matchingExact.h>
 
 #include <hxcore/HxMessage.h>
-#include <mclib/McAssert.h>
+#include <mclib/internal/McAssert.h>
 #include <mclib/McDArray.h>
 #include <mclib/McMath.h>
-#include <mclib/McVec3f.h>
+#include <mclib/McVec3.h>
 
 #include <hxalignmicrotubules/mtalign/NullPointRepresentation.h>
 #include <hxalignmicrotubules/mtalign/data.h>

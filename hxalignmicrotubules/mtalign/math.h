@@ -1,7 +1,7 @@
 #pragma once
 
-#include <mclib/McDMatrix.h>
-#include <mclib/McDVector.h>
+#include <mclib/internal/McDMatrix.h>
+#include <mclib/internal/McDVector.h>
 
 namespace mtalign {
 

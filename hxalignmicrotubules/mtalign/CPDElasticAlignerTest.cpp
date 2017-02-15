@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <gtest/gtest.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <gtest/internal/gtest.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 #include <mclib/McMat3f.h>
 
 namespace ma = mtalign;

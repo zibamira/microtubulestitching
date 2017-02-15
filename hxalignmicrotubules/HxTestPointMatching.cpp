@@ -7,24 +7,23 @@
 #include <QString>
 #include <QToolBar>
 
-#include <hxcore/HxMain.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxcore/HxApplication.h>
+
+#include <gtest/internal/gtest.h>
+
+// Use different strategies to activate the filament editor in core.git and
+// amira.git.  In core.git, it is a `HxWorkroom`, which has an activation
+// function.  In amira.git, the activation works via the sub application
+// toolbar, which is not available in core.git.
+
+#include <hxneuroneditor/internal/HxNeuronEditorSubApp.h>
+
+static void qxtSelectFilamentEditor() {
+    HxNeuronEditorSubApp::instance()->setActive();
+}
 
 namespace SteerFE {
-
-void qxtSelectFilamentEditor() {
-    QList<QToolBar*> subAppToolBar =
-        theMain->findChildren<QToolBar*>("subApplicationToolBar");
-    mcassert(1 == subAppToolBar.size());
-    QList<QAction*> allActions = subAppToolBar[0]->findChildren<QAction*>();
-    QList<QAction*> filamentEditorAction;
-    for (int i = 0; i < allActions.size(); i++) {
-        if (allActions[i]->text() == QString("Filament Editor"))
-            filamentEditorAction.append(allActions[i]);
-    }
-    mcassert(1 == filamentEditorAction.size());
-    filamentEditorAction[0]->trigger();
-}
 
 QAction* findNamedAction(QToolBar* toolbar) {
     foreach (QAction* a, toolbar->actions()) {
@@ -37,7 +36,7 @@ QAction* findNamedAction(QToolBar* toolbar) {
 
 void qxtSelectAlignTool() {
     QList<QToolBar*> toolbar =
-        theMain->findChildren<QToolBar*>("FilamentEditorToolboxToolbar");
+        theMainWindow->findChildren<QToolBar*>("FilamentEditorToolboxToolbar");
     mcassert(1 == toolbar.size());
     QAction* alignToolAction = findNamedAction(toolbar[0]);
     mcassert(NULL != alignToolAction);
@@ -51,7 +50,7 @@ void qxtActivateAlignTool() {
 
 void qxtDeactivateFilamentEditor() {
     QList<QToolBar*> subAppToolBar =
-        theMain->findChildren<QToolBar*>("subApplicationToolBar");
+        theMainWindow->findChildren<QToolBar*>("subApplicationToolBar");
     mcassert(1 == subAppToolBar.size());
     QList<QAction*> allActions = subAppToolBar[0]->findChildren<QAction*>();
     QList<QAction*> opEditorAction;
@@ -160,7 +159,7 @@ class QxtWidget {
     }
 };
 
-QxtWidget qxtRoot() { return QxtWidget(theMain); }
+QxtWidget qxtRoot() { return QxtWidget(theMainWindow); }
 
 class QxtAlignSpatialGraphTool {
   public:
@@ -275,15 +274,15 @@ HX_INIT_CLASS(HxTestPointMatching, HxCompModule);
 
 HxTestPointMatching::HxTestPointMatching()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portMatchingAlgorithmType(this, "algorithmType", 3),
-      portProjectionType(this, "projectionType", 1),
-      portThresholds(this, "thresholds", 3),
-      portParams(this, "parameters", 3),
-      portUseParams(this, "useParamsForWeights", 3),
-      portPGMPairParam(this, "pgmPairParam", 1),
-      portPGMDummieSignificance(this, "pgmDummieSignificance", 1),
-      portPairDummy(this, "pairDummy", 1),
-      mDoIt(this, "apply") {
+      portMatchingAlgorithmType(this, "algorithmType", tr("Algorithm Type"), 3),
+      portProjectionType(this, "projectionType", tr("Projection Type"), 1),
+      portThresholds(this, "thresholds", tr("Thresholds"), 3),
+      portParams(this, "parameters", tr("Parameters"), 3),
+      portUseParams(this, "useParamsForWeights", tr("Use Params For Weights"), 3),
+      portPGMPairParam(this, "pgmPairParam", tr("PGM Pair Param"), 1),
+      portPGMDummieSignificance(this, "pgmDummieSignificance", tr("PGM Dummie Significance"), 1),
+      portPairDummy(this, "pairDummy", tr("Pair Dummy"), 1),
+      mDoIt(this, "apply", tr("Apply")) {
 
     portMatchingAlgorithmType.setLabel(0, "Greedy");
     portMatchingAlgorithmType.setLabel(1, "Exact");
@@ -323,7 +322,7 @@ void HxTestPointMatching::compute() {
         return;
     }
 
-    if (portData.source() == NULL) {
+    if (portData.getSource() == NULL) {
         return;
     }
 
@@ -332,7 +331,7 @@ void HxTestPointMatching::compute() {
     McString algorithmName =
         qPrintable(QString(portMatchingAlgorithmType.getLabel(alogithmIdx)));
     HxSpatialGraph* origGraph =
-        dynamic_cast<HxSpatialGraph*>(portData.source());
+        dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxSpatialGraph* sg = origGraph->duplicate();
 
     if (sg == NULL) {
@@ -342,7 +341,7 @@ void HxTestPointMatching::compute() {
     SteerFE::qxtActivateAlignTool();
     SteerFE::QxtWidget mainWidget(SteerFE::qxtRoot().find("QxNeuronEditor"));
     SteerFE::QxtComboBox box = mainWidget.findComboBox("wGraphDataComboBox");
-    int ind = box.q->findText(QString(origGraph->getLabel().getString()));
+    int ind = box.q->findText(origGraph->getLabel());
     box.q->setCurrentIndex(ind);
     SteerFE::qxtAlignSpatialGraphTool()
         .tool.findButton("allRadioButton")

@@ -3,9 +3,9 @@
 #include <boost/function.hpp>
 
 #include <mclib/McDArray.h>
-#include <mclib/McDMatrix.h>
+#include <mclib/internal/McDMatrix.h>
 #include <mclib/McVec2i.h>
-#include <mclib/McVec3f.h>
+#include <mclib/McVec3.h>
 
 #include <hxalignmicrotubules/mtalign/Context.h>
 #include <hxalignmicrotubules/mtalign/cpd.h>

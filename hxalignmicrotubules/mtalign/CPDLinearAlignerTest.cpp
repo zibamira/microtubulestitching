@@ -3,12 +3,12 @@
 #include <stdio.h>
 #include <iostream>
 
-#include <gtest/gtest.h>
-#include <hxcore/TestingData.h>
-#include <hxcore/TestingObjectPoolCleaner.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <gtest/internal/gtest.h>
+#include <hxcore/internal/TestingData.h>
+#include <hxcore/internal/TestingObjectPoolCleaner.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 #include <mclib/McMat3f.h>
-#include <mclib/TestingDevNullRedirect.h>
+#include <mclib/internal/TestingDevNullRedirect.h>
 
 #include <hxalignmicrotubules/mtalign/rotation.h>
 #include <hxalignmicrotubules/mtalign/math.h>

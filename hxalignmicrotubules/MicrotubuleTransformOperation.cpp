@@ -138,7 +138,7 @@ void MicrotubuleTransformOperation::appendTransform(HxParameter* p,
     // get existing transform m
     SbMatrix m;
     double res[16];
-    if (p->dim() == 16) {
+    if (p->getDimension() == 16) {
         p->getReal(res);
         float* ptr = &m[0][0];
         for (int i = 0; i < 16; ++i) {

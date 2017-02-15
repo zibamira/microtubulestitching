@@ -1,9 +1,9 @@
 #include <hxalignmicrotubules/mtalign/SliceSelector.h>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include <gtest/internal/gtest.h>
+#include <gmock/internal/gmock.h>
 #include <hxalignmicrotubules/hxtesting.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 
 namespace ht = hxtesting;
 namespace ma = mtalign;

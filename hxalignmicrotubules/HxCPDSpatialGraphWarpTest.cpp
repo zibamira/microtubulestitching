@@ -1,12 +1,12 @@
 #include <hxalignmicrotubules/HxCPDSpatialGraphWarp.h>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <hxcore/TestingData.h>
-#include <hxcore/TestingObjectPoolCleaner.h>
-#include <hxgtest/hxtesting.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <mclib/TestingDevNullRedirect.h>
+#include <gmock/internal/gmock.h>
+#include <gtest/internal/gtest.h>
+#include <hxcore/internal/TestingData.h>
+#include <hxcore/internal/TestingObjectPoolCleaner.h>
+#include <hxgtest/internal/hxtesting.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <mclib/internal/TestingDevNullRedirect.h>
 
 #if defined(HX_OS_LINUX)
 #define TEST_F_LINUX(test_case_name, test_name)                                \
@@ -51,7 +51,7 @@ class HxCPDSpatialGraphWarpTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F_LINUX(HxCPDSpatialGraphWarpTest, computesBaselineElastic_E5MS) {
+TEST_F_LINUX(HxCPDSpatialGraphWarpTest, DISABLED_computesBaselineElastic_E5MS) {
     cpd->portMethod.setValue(2);
     expectComputesSha1("edff0ccb0796506a1585068bc0b5b9376a50275b");
 }

@@ -1,8 +1,9 @@
 #include <hxalignmicrotubules/MovingLeastSquares.h>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <mclib/McRandom.h>
+#include <gmock/internal/gmock.h>
+#include <gtest/internal/gtest.h>
+#include <mclib/internal/McRandom.h>
+#include <mclib/McVec3.h>
 
 using ::testing::Lt;
 using ::testing::Gt;

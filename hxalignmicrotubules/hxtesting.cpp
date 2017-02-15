@@ -1,6 +1,6 @@
 #include <hxalignmicrotubules/hxtesting.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/HierarchicalLabels.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HierarchicalLabels.h>
 
 static void addSegment(HxSpatialGraph* sg, McDArray<McVec3f>& points) {
     const int node0 = sg->addVertex(points[0]);
@@ -9,7 +9,7 @@ static void addSegment(HxSpatialGraph* sg, McDArray<McVec3f>& points) {
 }
 
 static McHandle<HxSpatialGraph> makeSpatialGraph() {
-    McHandle<HxSpatialGraph> sg(new HxSpatialGraph);
+    McHandle<HxSpatialGraph> sg(HxSpatialGraph::createInstance());
 
     for (int z = 0; z < 3; z++) {
         McDArray<McVec3f> points;
@@ -27,7 +27,7 @@ static void addOrderedNodeIntAttribute(HxSpatialGraph* sg) {
     const int nDataVar = 1;
     EdgeVertexAttribute* attr =
         static_cast<EdgeVertexAttribute*>(sg->addAttribute(
-            attrName, HxSpatialGraph::VERTEX, McPrimType::mc_int32, nDataVar));
+            attrName, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, nDataVar));
     mcassert(attr);
     for (int i = 0; i < sg->getNumVertices(); i++) {
         // Each section contains two nodes.
@@ -40,7 +40,7 @@ static void addUnorderedNodeIntAttribute(HxSpatialGraph* sg) {
     const int nDataVar = 1;
     EdgeVertexAttribute* attr =
         static_cast<EdgeVertexAttribute*>(sg->addAttribute(
-            attrName, HxSpatialGraph::VERTEX, McPrimType::mc_int32, nDataVar));
+            attrName, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, nDataVar));
     mcassert(attr);
     for (int i = 0; i < sg->getNumVertices(); i++) {
         attr->setIntDataAtIdx(i, i % 3);

@@ -4,8 +4,8 @@
 #include <Inventor/manips/SoTransformerManip.h>
 
 #include <hxcore/HxCompModule.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphViewNode.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphViewNode.h>
 
 #include <hxalignmicrotubules/api.h>
 
@@ -16,7 +16,6 @@ class HXALIGNMICROTUBULES_API HxManualMTAlign : public HxCompModule {
     HX_HEADER(HxManualMTAlign);
 
   public:
-    HxManualMTAlign();
     virtual void compute();
 
     void startTransform();

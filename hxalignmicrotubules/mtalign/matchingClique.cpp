@@ -2,15 +2,16 @@
 
 #include <QTime>
 #include <limits>
+#include <algorithm>
 
 #include <hxcore/HxMessage.h>
-#include <mclib/McAssert.h>
+#include <mclib/internal/McAssert.h>
 #include <mclib/McBitfield.h>
 #include <mclib/McDArray.h>
 #include <mclib/McMath.h>
-#include <mclib/McRotation.h>
+#include <mclib/McRot.h>
 #include <mclib/McVec2i.h>
-#include <mclib/McVec3f.h>
+#include <mclib/McVec3.h>
 
 #include <pointmatching/StartTransformationGenerator3d.h>
 #include <pointmatching/Transformation.h>
@@ -167,7 +168,7 @@ McDArray<McMat4f> asMats(const McDArray<Transformation>& ts) {
         ts[i].getTransformation3d().getTransform(translation, rotation, scale,
                                                  so);
         translation.z = 0.0;
-        McMat4f mat = McMat4f::identity();
+        McMat4f mat = McMat4f::IDENTITY;
         mat.setTransform(translation, rotation, scale);
         mats.append(mat);
     }

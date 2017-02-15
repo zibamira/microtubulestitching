@@ -6,4 +6,5 @@ The following people also contributed:
  - Alexander Wiebel
  - Daniel Baum
  - Morgan Leborgne
+ - Norbert Lindow
  - Vincent Dercksen

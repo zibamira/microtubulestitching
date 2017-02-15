@@ -6,15 +6,15 @@
 #include <QAction>
 #include <QComboBox>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <hxcore/HxMain.h>
+#include <gmock/internal/gmock.h>
+#include <gtest/internal/gtest.h>
 #include <hxcore/HxObjectPool.h>
-#include <hxcore/TestingData.h>
-#include <hxcore/TestingObjectPoolCleaner.h>
-#include <hxgtest/hxtesting.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <mclib/TestingDevNullRedirect.h>
+#include <hxcore/internal/TestingData.h>
+#include <hxcore/internal/TestingObjectPoolCleaner.h>
+#include <hxcore/HxApplication.h>
+#include <hxgtest/internal/hxtesting.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <mclib/internal/TestingDevNullRedirect.h>
 
 #include <hxalignmicrotubules/HxMovingLeastSquaresSpatialGraphWarp.h>
 #include <hxalignmicrotubules/attic/WriteMatchingProperties2.h>
@@ -32,16 +32,15 @@
 
 namespace ht = hxtesting;
 
+// Use different strategies to activate the filament editor in core.git and
+// amira.git.  In core.git, it is a `HxWorkroom`, which has an activation
+// function.  In amira.git, the activation works via the sub application
+// toolbar, which is not available in core.git.
+
+#include <hxneuroneditor/internal/HxNeuronEditorSubApp.h>
+
 static void qxtSelectFilamentEditor() {
-    QList<QToolBar*> subAppToolBar =
-        theMain->findChildren<QToolBar*>("subApplicationToolBar");
-    ASSERT_EQ(1, subAppToolBar.size());
-
-    QList<QAction*> filamentEditorAction =
-        subAppToolBar[0]->findChildren<QAction*>("Filament Editor");
-    ASSERT_EQ(1, filamentEditorAction.size());
-
-    filamentEditorAction[0]->trigger();
+    HxNeuronEditorSubApp::instance()->setActive();
 }
 
 static QAction* findNamedAction(QToolBar* toolbar) {
@@ -55,7 +54,7 @@ static QAction* findNamedAction(QToolBar* toolbar) {
 
 static void qxtSelectAlignTool() {
     QList<QToolBar*> toolbar =
-        theMain->findChildren<QToolBar*>("FilamentEditorToolboxToolbar");
+        theMainWindow->findChildren<QToolBar*>("FilamentEditorToolboxToolbar");
     ASSERT_EQ(1, toolbar.size());
 
     QAction* alignToolAction = findNamedAction(toolbar[0]);
@@ -238,7 +237,7 @@ class QxtAlignMicrotubuleTool {
 
 }  // namespace
 
-static QxtWidget qxtRoot() { return QxtWidget(theMain); }
+static QxtWidget qxtRoot() { return QxtWidget(theMainWindow); }
 
 static QxtAlignMicrotubuleTool qxtAlignSpatialGraphTool() {
     return QxtAlignMicrotubuleTool(
@@ -553,7 +552,7 @@ TEST(
     ASSERT_TRUE(sgdat.dataOk<HxSpatialGraph>());
     HxSpatialGraph* sg = sgdat.get<HxSpatialGraph>();
 
-    WriteMatchingProperties2* writer = new WriteMatchingProperties2();
+    WriteMatchingProperties2* writer = WriteMatchingProperties2::createInstance();
     theObjectPool->addObject(writer);
     writer->portData.connect(sg);
     writer->portAction.hit();
@@ -796,9 +795,8 @@ TEST(MicrotubuleSpatialGraphAligner,
     ASSERT_TRUE(sgdat.dataOk<HxSpatialGraph>());
     HxSpatialGraph* sg = sgdat.get<HxSpatialGraph>();
 
-    float origBB[6];
     float eps = 1.e-7;
-    sg->getBoundingBox(origBB);
+    const McBox3f& origBB = sg->getBoundingBox();
 
     qxtActivateAlignTool();
 
@@ -817,8 +815,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 
     EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 162);
 
-    float afterFirstOptBB[6];
-    sg->getBoundingBox(afterFirstOptBB);
+    const McBox3f& afterFirstOptBB = sg->getBoundingBox();
     EXPECT_NEAR(origBB[4], afterFirstOptBB[4], eps);
     EXPECT_NEAR(origBB[5], afterFirstOptBB[5], eps);
 
@@ -833,8 +830,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 
     EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 58);
 
-    float afterFirstInitBB[6];
-    sg->getBoundingBox(afterFirstInitBB);
+    const McBox3f& afterFirstInitBB = sg->getBoundingBox();
     EXPECT_NEAR(origBB[4], afterFirstInitBB[4], eps);
     EXPECT_NEAR(origBB[5], afterFirstInitBB[5], eps);
 
@@ -847,8 +843,7 @@ TEST(MicrotubuleSpatialGraphAligner,
 
     EXPECT_EQ(countMatches(sg, "GreedyAssignedPairs"), 327);
 
-    float afterSecondOptBB[6];
-    sg->getBoundingBox(afterSecondOptBB);
+    const McBox3f& afterSecondOptBB = sg->getBoundingBox();
     EXPECT_NEAR(origBB[4], afterSecondOptBB[4], eps);
     EXPECT_NEAR(origBB[5], afterSecondOptBB[5], eps);
 }
@@ -1034,9 +1029,10 @@ static std::vector<Expectation> makeExpectations() {
     e.sha1 = "4ebca0231d0113647d7001a0f45990835506af8f";
     es.push_back(e);
 
+    // DISABLED, because the result is unstable on Linux.
     e.path = "test/data/randomSmallExample5.am";
     e.sha1 = "33459a2bc95851cb76954f65bb6f2547323c21f1";
-    es.push_back(e);
+    // es.push_back(e);
 
     // DISABLED, because the result is unstable on Linux.  The test worked on
     // MacX.  The status on Windows is unknown.

@@ -3,10 +3,13 @@
 #include <QShortcut>
 
 #include <hxcore/HxResource.h>
-#include <hxneuroneditor/HxNeuronEditorSubApp.h>
-#include <hxspatialgraph/HierarchicalLabels.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/HxSpatialGraphView.h>
+#include <hxcore/QxViewerPanel.h>
+#include <hxcore/HxViewer.h>
+#include <hxneuroneditor/internal/HxNeuronEditorSubApp.h>
+#include <hxspatialgraph/internal/HierarchicalLabels.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraphView.h>
+#include <hxspatialgraph/internal/HxSpatialGraphInterface.h>
 #include <mclib/McException.h>
 
 #include <hxalignmicrotubules/MicrotubuleSpatialGraphAligner.h>
@@ -190,7 +193,7 @@ void QxMicrotubuleAlignSpatialGraphTool::fillComboBoxes() {
 void QxMicrotubuleAlignSpatialGraphTool::initAligner() {
     mcassert(mAligner);
     QString attName = ui.sortComboBox->currentText();
-    McString attName2 = McString(attName.toAscii().constData());
+    McString attName2 = McString(attName.toLatin1().constData());
     if (attName2 == "") {
         theMsg->printf("Error: no valid attribute selected");
         return;
@@ -212,13 +215,13 @@ void QxMicrotubuleAlignSpatialGraphTool::initAligner() {
         ui.createMatchingLabelsCheckBox->isChecked());
 
     McString projType =
-        McString(ui.projectionComboBox->currentText().toAscii().constData());
+        McString(ui.projectionComboBox->currentText().toLatin1().constData());
     mAligner->setProjectionType(projType);
     McString transType =
-        McString(ui.transformComboBox->currentText().toAscii().constData());
+        McString(ui.transformComboBox->currentText().toLatin1().constData());
     mAligner->setTransformType(transType);
     McString pmAlg =
-        McString(ui.pmAlgorithmComboBox->currentText().toAscii().constData());
+        McString(ui.pmAlgorithmComboBox->currentText().toLatin1().constData());
     mAligner->setPointMatchingAlgorithm(pmAlg);
     mAligner->setScaleTestMin(ui.scaleTestMin->text().toFloat());
     mAligner->setScaleTestMax(ui.scaleTestMax->text().toFloat());
@@ -529,7 +532,7 @@ void QxMicrotubuleAlignSpatialGraphTool::startManualTransform() {
     mAligner->getSliceSelection(mTransSlice, mManualSliceSelection);
     mManualSlice = mGraph->getSubgraph(mManualSliceSelection);
 
-    mManualAligner = new HxManualMTAlign();
+    mManualAligner = HxManualMTAlign::createInstance();
     mManualAligner->setViewerMask(1 << 14);
     mManualAligner->portData.connect(mManualSlice);
     mManualAligner->fire();
@@ -607,10 +610,10 @@ void QxMicrotubuleAlignSpatialGraphTool::addLandmark() {
     }
     EdgeVertexAttribute* att =
         dynamic_cast<EdgeVertexAttribute*>(graph->addAttribute(
-            "WarpPairs", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            "WarpPairs", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     EdgeVertexAttribute* trafoAtt =
         dynamic_cast<EdgeVertexAttribute*>(graph->addAttribute(
-            "TransformInfo", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            "TransformInfo", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     if (!trafoAtt) {
         theMsg->printf("Landmarks are only useful if you have a TransformInfo "
                        "attribute. I'm not doing anything.");
@@ -686,10 +689,10 @@ void QxMicrotubuleAlignSpatialGraphTool::addEvidenceLabel() {
     }
     EdgeVertexAttribute* att =
         dynamic_cast<EdgeVertexAttribute*>(graph->addAttribute(
-            "Evidence", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            "Evidence", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     EdgeVertexAttribute* trafoAtt =
         dynamic_cast<EdgeVertexAttribute*>(graph->addAttribute(
-            "TransformInfo", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            "TransformInfo", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     if (!trafoAtt) {
         theMsg->printf("Evidence is only useful if you have a TransformInfo "
                        "attribute. I'm not doing anything.");
@@ -773,7 +776,7 @@ QxMicrotubuleAlignSpatialGraphTool::shouldAddVertexAttributeToVertexColoringBox(
     if (!attribute)
         return false;
     McPrimType type = attribute->primType();
-    if (McPrimType::mc_int32 == type)
+    if (McPrimType::MC_INT32 == type)
         return true;
     return false;
 }
@@ -824,8 +827,8 @@ QxMicrotubuleAlignSpatialGraphTool::copyViewerSettingsForManualTransform() {
     const HxSpatialGraphView* viewer = mEditor->getView();
     mcassert(viewer);
 
-    mManualAligner->showNodes(viewer->portItemsToShow.getValue(0));
-    mManualAligner->showSegments(viewer->portItemsToShow.getValue(1));
+    mManualAligner->showNodes(viewer->portItemsToShow.portDeprecated.getValue(0));
+    mManualAligner->showSegments(viewer->portItemsToShow.portDeprecated.getValue(1));
 
     const int nodeColorIndex = viewer->portVertexColoring.getIndex();
     const QString nodeColorAttributeName =

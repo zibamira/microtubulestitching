@@ -3,7 +3,7 @@
 #include <mclib/McDArray.h>
 #include <hxalignmicrotubules/mtalign/data.h>
 
-#include <mclib/McMat4f.h>
+#include <mclib/McMat4.h>
 
 namespace mtalign {
 

@@ -1,6 +1,6 @@
 #include <hxalignmicrotubules/mtalign/math.h>
 
-#include <gtest/gtest.h>
+#include <gtest/internal/gtest.h>
 
 namespace ma = mtalign;
 

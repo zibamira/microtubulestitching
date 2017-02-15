@@ -8,9 +8,9 @@
 #include <hxcore/HxPortFloatTextN.h>
 #include <hxcore/HxPortMultiMenu.h>
 #include <hxcore/HxPortToggleList.h>
-#include <mclib/McDMatrix.h>
-#include <mclib/McDVector.h>
-#include <mclib/McVec3f.h>
+#include <mclib/internal/McDMatrix.h>
+#include <mclib/internal/McDVector.h>
+#include <mclib/McVec3.h>
 
 #include <hxalignmicrotubules/api.h>
 
@@ -35,8 +35,6 @@ class HXALIGNMICROTUBULES_API HxCPDSpatialGraphWarp : public HxCompModule {
         std::vector<int> upperTransformSlices;
         std::vector<int> lowerTransformSlices;
     };
-
-    HxCPDSpatialGraphWarp();
 
     virtual void update();
 
@@ -96,7 +94,6 @@ class HXALIGNMICROTUBULES_API HxCPDSpatialGraphWarp : public HxCompModule {
     void computeRigidVanMises();
 
   protected:
-    ~HxCPDSpatialGraphWarp();
     HxSpatialGraph* createOutputDataSet();
     HxUniformVectorField3* createOutputVectorDataSet();
     void computeNL();

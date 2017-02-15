@@ -199,69 +199,13 @@ repo.  The full history is maintained in `zib-amira`.  The export is done as
 squashed commits from release tags `zibamira-*.*` using the low-level `git
 commit-tree`.
 
-The configuration:
+Prepare a squashed commit with:
 
-    subdir=microtubulestitching
-    branch=${subdir}/master
-    first=zibamira-2014.56
+```bash
+./export-to-github.sh
+```
 
-The initial export:
-
-    [ "$(basename "$(pwd)")" = "zib-amira" ] ||
-        printf "Run the commands in the toplevel of zib-amira.git worktree."
-
-    read _ _ tree _ <<<"$(git ls-tree ${first} -- ${subdir})"
-    git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${first}'"
-
-    msg="Initial import of zib-amira/${subdir}@${first}"
-    commit=$(git commit-tree ${tree} <<<"${msg}")
-    git update-ref -m "initial export ${subdir}" refs/heads/${branch} ${commit} 0000000000000000000000000000000000000000
-
-    printf '\n%s\n\n' "Branch '${branch}' is now at:" && git show -s ${branch}
-
-For further exports, first search the commit that matches the exported tree:
-
-    [ "$(basename "$(pwd)")" = "zib-amira" ] ||
-        echo "Run the commands in the toplevel of zib-amira.git worktree."
-
-    prevtree=$(git show -s --pretty=format:%T ${branch})
-    git cat-file tree ${prevtree} >/dev/null || echo "failed to determine prevtree"
-
-    prev=$(
-        git rev-list ${first}^..origin/next |
-        while read r; do
-            printf '%s %s\n' ${r} "$(git ls-tree ${r} -- ${subdir})"
-        done |
-        grep ${prevtree} |
-        while read commit _; do
-           git describe --exact-match ${commit} && break
-        done
-    )
-    git describe --exact-match ${prev} ||
-        echo "failed to determine commit of previous export."
-
-Then configure the current version to export:
-
-    this=zibamira-2015.09
-
-and create a squashed commit:
-
-    read _ _ tree _ <<<"$(git ls-tree ${this} -- ${subdir})"
-    git cat-file tree ${tree} >/dev/null || echo "failed to determine tree for '${this}'"
-
-    commit=$(
-        (
-            echo "Update to zib-amira/${subdir}@${this}"
-            echo
-            echo "Relevant commits since the previous export:"
-            echo
-            git log --oneline --reverse ${prev}..${this} -- ${subdir} | sed -e 's/^/    /'
-        ) |
-        git commit-tree -p ${branch} ${tree}
-    )
-    git update-ref -m "update export ${subdir}" refs/heads/${branch} ${commit} ${branch}
-
-    printf '\n%s\n\n' "Branch '${branch}' is now at:" && git show -s ${branch}
+Then review and push to GitHub.
 
 # Useful commands
 

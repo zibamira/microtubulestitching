@@ -1,11 +1,11 @@
 #include <hxalignmicrotubules/mtalign/matchingGreedy.h>
 
-#include <mclib/McComparators.h>
+#include <mclib/internal/McComparators.h>
 #include <mclib/McDArray.h>
 #include <mclib/McMath.h>
 #include <mclib/McPlane.h>
-#include <mclib/McSorter.h>
-#include <mclib/McVec3f.h>
+#include <mclib/internal/McSorter.h>
+#include <mclib/McVec3.h>
 
 #include <hxalignmicrotubules/mtalign/NullPointRepresentation.h>
 #include <hxalignmicrotubules/mtalign/data.h>

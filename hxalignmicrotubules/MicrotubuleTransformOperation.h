@@ -1,7 +1,7 @@
 #pragma once
 
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphSelection.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphSelection.h>
 
 #include <hxalignmicrotubules/api.h>
 

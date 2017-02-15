@@ -5,24 +5,24 @@
 #include <cstdlib>
 
 #include <hxcore/HxMessage.h>
-#include <hxspatialgraph/HierarchicalLabels.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HierarchicalLabels.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 #include <mclib/McMath.h>
 
 HX_INIT_CLASS(HxComparePointMatchings, HxCompModule);
 
 HxComparePointMatchings::HxComparePointMatchings()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portPairLabel(this, "MatchingLabelToCompareTo", 1),
-      portFalsePositivePairs(this, "falsePositivePairs", 1),
-      portFalseNegativePairs(this, "falseNegativePairs", 1),
-      portDisagreementPairs(this, "disagreementPairs", 1),
-      portTruePositivePairs(this, "correctPairs", 1),
-      portTreeNodes(this, "treeNodes", 1),
-      portCriticalNodes(this, "criticalNodes", 1),
-      portNumberOfManualPairs(this, "numberOfManualPairs"),
-      portNumberOfAutoPairs(this, "portNumberOfAutoPairs"),
-      mDoIt(this, "apply") {
+      portPairLabel(this, "MatchingLabelToCompareTo", tr("Matching Label To Compare To"), 1),
+      portFalsePositivePairs(this, "falsePositivePairs", tr("False Positive Pairs"), 1),
+      portFalseNegativePairs(this, "falseNegativePairs", tr("False Negative Pairs"), 1),
+      portDisagreementPairs(this, "disagreementPairs", tr("Disagreement Pairs"), 1),
+      portTruePositivePairs(this, "correctPairs", tr("Correct Pairs"), 1),
+      portTreeNodes(this, "treeNodes", tr("Tree Nodes"), 1),
+      portCriticalNodes(this, "criticalNodes", tr("Critical Nodes"), 1),
+      portNumberOfManualPairs(this, "numberOfManualPairs", tr("Number Of Manual Pairs")),
+      portNumberOfAutoPairs(this, "portNumberOfAutoPairs", tr("Number Of Auto Pairs")),
+      mDoIt(this, "apply", tr("Apply")) {
     portTreeNodes.hide();
     portCriticalNodes.hide();
 }
@@ -40,13 +40,13 @@ void HxComparePointMatchings::compute() {
         return;
     }
 
-    if (portData.source() == NULL) {
+    if (portData.getSource() == NULL) {
         return;
     }
     // Recompute all
 
     HxSpatialGraph* origGraph =
-        dynamic_cast<HxSpatialGraph*>(portData.source());
+        dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxSpatialGraph* sg = origGraph->duplicate();
 
     if (sg == NULL) {
@@ -144,7 +144,7 @@ void HxComparePointMatchings::rewritePairs(HxSpatialGraph* graph,
 
     EdgeVertexAttribute* att = dynamic_cast<EdgeVertexAttribute*>(
         graph->addAttribute(pairsName.dataPtr(), HxSpatialGraph::VERTEX,
-                            McPrimType::mc_int32, 1));
+                            McPrimType::MC_INT32, 1));
     HierarchicalLabels* labelGroup = NULL;
     if (writeLabels) {
         graph->addNewLabelGroup(pairsName.dataPtr(), false, true);

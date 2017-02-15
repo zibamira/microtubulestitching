@@ -1,7 +1,7 @@
 #pragma once
 
-#include <hxneuroneditor/HxNeuronEditorSubApp.h>
-#include <hxneuroneditor/QxNeuronEditorToolBox.h>
+#include <hxneuroneditor/internal/HxNeuronEditorSubApp.h>
+#include <hxneuroneditor/internal/QxNeuronEditorToolBox.h>
 #include <mclib/McBitfield.h>
 
 #include <hxalignmicrotubules/mtalign/PGMPairWeights.h>

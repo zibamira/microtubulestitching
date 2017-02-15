@@ -13,9 +13,6 @@ class HXALIGNMICROTUBULES_API HxTestPointMatching : public HxCompModule {
     HX_HEADER(HxTestPointMatching);
 
   public:
-    HxTestPointMatching();
-
-    ~HxTestPointMatching();
 
     void compute();
 

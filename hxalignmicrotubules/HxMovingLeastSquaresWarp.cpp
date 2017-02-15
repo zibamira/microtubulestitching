@@ -4,7 +4,7 @@
 #include <hxfield/HxUniformLabelField3.h>
 #include <hxfield/HxUniformScalarField3.h>
 #include <hxfield/HxUniformVectorField3.h>
-#include <hxlandmark/HxLandmarkSet.h>
+#include <hxlandmark/internal/HxLandmarkSet.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -13,7 +13,7 @@
 
 #include <hxalignmicrotubules/MovingLeastSquares.h>
 
-static mculong latticePos(int i, int j, int k, const int* dims) {
+static mculong latticePos(int i, int j, int k, const McDim3l& dims) {
     return (mculong)dims[0] * (mculong)dims[1] * (mculong)k +
            (mculong)j * (mculong)dims[0] + (mculong)i;
 }
@@ -22,11 +22,11 @@ HX_INIT_CLASS(HxMovingLeastSquaresWarp, HxCompModule);
 
 HxMovingLeastSquaresWarp::HxMovingLeastSquaresWarp()
     : HxCompModule(HxLandmarkSet::getClassTypeId()),
-      portFromImage(this, "from", HxUniformScalarField3::getClassTypeId()),
-      portToImage(this, "to", HxUniformScalarField3::getClassTypeId()),
-      portMethod(this, "method", 1),
-      portAlpha(this, "parameter"),
-      portAction(this, "action") {
+      portFromImage(this, "from", tr("From"), HxUniformScalarField3::getClassTypeId()),
+      portToImage(this, "to", tr("To"), HxUniformScalarField3::getClassTypeId()),
+      portMethod(this, "method", tr("Method"), 1),
+      portAlpha(this, "parameter", tr("Parameter")),
+      portAction(this, "action", tr("Action")) {
     portAction.setAliasName("doIt");
     portMethod.setLabel(0, "Rigid");
     portAlpha.setLabel("Alpha:");
@@ -40,55 +40,53 @@ void HxMovingLeastSquaresWarp::update() {}
 
 HxUniformVectorField3* HxMovingLeastSquaresWarp::createOutputVectorDataSet() {
     HxUniformScalarField3* fromImage =
-        dynamic_cast<HxUniformScalarField3*>(portFromImage.source());
+        dynamic_cast<HxUniformScalarField3*>(portFromImage.getSource());
     HxUniformVectorField3* output =
         dynamic_cast<HxUniformVectorField3*>(getResult(1));
 
     if (!fromImage)
         return (0);
 
-    int dims[3];
-    float bbox[6];
+    McDim3l dims;
+    McBox3f bbox;
 
     if (fromImage) {
-        memcpy(dims, fromImage->lattice.dimsInt(), 3 * sizeof(int));
-        fromImage->getBoundingBox(bbox);
+        dims = fromImage->lattice().getDims();
+        bbox = fromImage->getBoundingBox();
     }
-    if (!output || output->lattice.dimsInt()[0] != dims[0] ||
-        output->lattice.dimsInt()[1] != dims[1] ||
-        output->lattice.dimsInt()[2] != dims[2])
+    if (!output || output->lattice().getDims() != dims)
         output = 0;
 
     if (!output) {
-        output = new HxUniformVectorField3(dims, McPrimType::mc_float);
+        output = new HxUniformVectorField3(dims, McPrimType::MC_FLOAT);
     }
-    output->lattice.setBoundingBox(bbox);
-    output->composeLabel(fromImage->getLabel().getString(), "Displacement");
+    output->lattice().setBoundingBox(bbox);
+    output->composeLabel(fromImage->getLabel(), "Displacement");
     setResult(1, output);
     return (output);
 }
 
 HxUniformScalarField3* HxMovingLeastSquaresWarp::createOutputDataSet() {
     HxUniformScalarField3* fromImage =
-        dynamic_cast<HxUniformScalarField3*>(portFromImage.source());
+        dynamic_cast<HxUniformScalarField3*>(portFromImage.getSource());
     HxUniformScalarField3* toImage =
-        dynamic_cast<HxUniformScalarField3*>(portToImage.source());
+        dynamic_cast<HxUniformScalarField3*>(portToImage.getSource());
     HxUniformScalarField3* warpedImage =
         dynamic_cast<HxUniformScalarField3*>(getResult(0));
 
     if (!fromImage)
         return (0);
 
-    int dims[3];
-    float bbox[6];
+    McDim3l dims;
+    McBox3f bbox;
 
     if (toImage) {
-        memcpy(dims, toImage->lattice.dimsInt(), 3 * sizeof(int));
-        toImage->getBoundingBox(bbox);
+        dims = toImage->lattice().getDims();
+        bbox = toImage->getBoundingBox();
     }
-    if (!warpedImage || warpedImage->lattice.dimsInt()[0] != dims[0] ||
-        warpedImage->lattice.dimsInt()[1] != dims[1] ||
-        warpedImage->lattice.dimsInt()[2] != dims[2])
+    if (!warpedImage || warpedImage->lattice().getDims()[0] != dims[0] ||
+        warpedImage->lattice().getDims()[1] != dims[1] ||
+        warpedImage->lattice().getDims()[2] != dims[2])
         warpedImage = 0;
 
     if (!warpedImage) {
@@ -101,8 +99,8 @@ HxUniformScalarField3* HxMovingLeastSquaresWarp::createOutputDataSet() {
                 new HxUniformScalarField3(dims, fromImage->primType());
     }
 
-    memcpy(warpedImage->bbox(), bbox, 6 * sizeof(float));
-    warpedImage->composeLabel(fromImage->getLabel().getString(), "Warped");
+    warpedImage->setBoundingBox(bbox);
+    warpedImage->composeLabel(fromImage->getLabel(), "Warped");
     setResult(0, warpedImage);
     return (warpedImage);
 }
@@ -133,7 +131,7 @@ void HxMovingLeastSquaresWarp::compute() {
         return;
 
     HxUniformScalarField3* fromImage =
-        (HxUniformScalarField3*)portFromImage.source();
+        (HxUniformScalarField3*)portFromImage.getSource();
 
     HxLandmarkSet* pointSet = hxconnection_cast<HxLandmarkSet>(portData);
 
@@ -157,7 +155,7 @@ void HxMovingLeastSquaresWarp::compute() {
     outputImage = createOutputDataSet();
     outputVectorField = createOutputVectorDataSet();
 
-    float* outputImageData = (float*)outputImage->lattice.dataPtr();
+    float* outputImageData = (float*)outputImage->lattice().dataPtr();
 
     McDArray<McVec2d> landmarks1, landmarks2;
 
@@ -167,13 +165,11 @@ void HxMovingLeastSquaresWarp::compute() {
     mls.setAlpha(portAlpha.getValue());
     mls.setLandmarks(landmarks2, landmarks1);
 
-    const int* dims = outputImage->lattice.dimsInt();
+    const McDim3l& dims = outputImage->lattice().getDims();
 
     McVec3f voxelSizeInOutputImage = outputImage->getVoxelSize();
-    float bboxOfOutputImage[6];
-    outputImage->getBoundingBox(bboxOfOutputImage);
-    float bboxOfFromImage[6];
-    fromImage->getBoundingBox(bboxOfFromImage);
+    const McBox3f& bboxOfOutputImage = outputImage->getBoundingBox();
+    const McBox3f& bboxOfFromImage = fromImage->getBoundingBox();
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
@@ -195,10 +191,10 @@ void HxMovingLeastSquaresWarp::compute() {
                                               warpedCoordInFromImage.y,
                                               bboxOfFromImage[4]));
             float resultValue[1];
-            fromImage->eval(locationInFromImage, resultValue);
+            fromImage->eval(*locationInFromImage, resultValue);
             unsigned long pos = latticePos(i, j, 0, dims);
             outputImageData[pos] = resultValue[0];
-            outputVectorField->lattice.set(i, j, 0, displacement.getValue());
+            outputVectorField->lattice().set(i, j, 0, displacement.getValue());
         }
         delete locationInFromImage;
     }

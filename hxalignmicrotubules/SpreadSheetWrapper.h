@@ -1,13 +1,9 @@
 #pragma once
 
 #include <mclib/McHandle.h>
-#include <mclib/McHashTable.h>
+#include <mclib/internal/McHashTable.h>
 
-#ifdef HX_AMIRA5_COMPAT
-#include <hxstatistics/HxSpreadSheet.h>
-#else
-#include <hxspreadsheet/HxSpreadSheet.h>
-#endif
+#include <hxspreadsheet/internal/HxSpreadSheet.h>
 
 #include <hxalignmicrotubules/api.h>
 
@@ -22,10 +18,6 @@ class HXALIGNMICROTUBULES_API SpreadSheetWrapper : public HxSpreadSheet {
 
         int mIndex;
     };
-
-    SpreadSheetWrapper();
-
-    ~SpreadSheetWrapper(void);
 
     static const char* ROW_NAME;
 

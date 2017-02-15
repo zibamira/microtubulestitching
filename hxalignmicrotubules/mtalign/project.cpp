@@ -2,9 +2,9 @@
 
 #include <limits>
 
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphSelection.h>
-#include <mclib/McDMatrix.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphSelection.h>
+#include <mclib/internal/McDMatrix.h>
 #include <mclib/McPlane.h>
 #include <mclib/McLine.h>
 

@@ -4,7 +4,7 @@
 #include <hxcore/HxPortMultiMenu.h>
 #include <hxcore/HxPortDoIt.h>
 #include <hxcore/HxPortFloatSlider.h>
-#include <mclib/McVec2d.h>
+#include <mclib/McVec2.h>
 
 #include <hxalignmicrotubules/api.h>
 
@@ -19,7 +19,6 @@ class HXALIGNMICROTUBULES_API HxMovingLeastSquaresWarp : public HxCompModule {
     HX_HEADER(HxMovingLeastSquaresWarp);
 
   public:
-    HxMovingLeastSquaresWarp();
 
     HxConnection portFromImage;
     HxConnection portToImage;
@@ -31,7 +30,6 @@ class HXALIGNMICROTUBULES_API HxMovingLeastSquaresWarp : public HxCompModule {
     virtual void compute();
 
   protected:
-    ~HxMovingLeastSquaresWarp();
 
     HxUniformScalarField3* createOutputDataSet();
     HxUniformVectorField3* createOutputVectorDataSet();

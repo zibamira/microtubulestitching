@@ -1,11 +1,12 @@
 #include <hxalignmicrotubules/mtalign/matching.h>
 
 #include <mclib/McDArray.h>
-#include <mclib/McMat4f.h>
-#include <mclib/McVec3f.h>
-#include <mclib/McVec3f.h>
-#include <mclib/McRotation.h>
-#include <mclib/McAssert.h>
+#include <mclib/McMath.h>
+#include <mclib/McMat4.h>
+#include <mclib/McVec3.h>
+#include <mclib/McVec3.h>
+#include <mclib/McRot.h>
+#include <mclib/internal/McAssert.h>
 
 #include <hxalignmicrotubules/mtalign/matchingClique.h>
 #include <hxalignmicrotubules/mtalign/matchingExact.h>

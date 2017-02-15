@@ -1,11 +1,11 @@
 #include <hxalignmicrotubules/mtalign/fitTransform.h>
 
 #include <hxcore/HxMessage.h>
-#include <mclib/McAlignPointSets.h>
+#include <mclib/internal/McAlignPointSets.h>
 #include <mclib/McDArray.h>
-#include <mclib/McMat4f.h>
-#include <mclib/McVec3f.h>
-#include <mclib/McDMatrix.h>
+#include <mclib/McMat4.h>
+#include <mclib/McVec3.h>
+#include <mclib/internal/McDMatrix.h>
 
 namespace ma = mtalign;
 
@@ -36,7 +36,7 @@ McMat4f ma::fitTransformAffine(const FacingPointSets& pts,
                                const Matching& matching) {
     if (!matching.matchedRefPointIds.size() ||
         !matching.matchedTransPointIds.size()) {
-        return McMat4f::identity();
+        return McMat4f::IDENTITY;
     }
 
     // Do a final affine transform for the best point matching.
@@ -75,8 +75,7 @@ McMat4f ma::fitTransformAffine(const FacingPointSets& pts,
 
     Minv.multVec(&b[0], &a[0]);
 
-    McMat4f m;
-    m.makeIdentity();
+    McMat4f m = McMat4f::IDENTITY;
 
     m[0][0] = a[0];
     m[1][0] = a[1];
@@ -97,7 +96,7 @@ McMat4f ma::fitTransform(const FacingPointSets& pts, const Matching& matching,
     switch (tfType) {
 
     case TF_NONE:
-        tf = McMat4f::identity();
+        tf = McMat4f::IDENTITY;
         break;
 
     case TF_RIGID:

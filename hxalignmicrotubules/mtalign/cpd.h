@@ -1,9 +1,11 @@
 #pragma once
 
+
+#include <hxalignmicrotubules/api.h>
 #include <mclib/McDArray.h>
-#include <mclib/McMat4f.h>
-#include <mclib/McVec2d.h>
-#include <mclib/McVec3f.h>
+#include <mclib/McMat4.h>
+#include <mclib/McVec2.h>
+#include <mclib/McVec3.h>
 
 namespace mtalign {
 
@@ -111,7 +113,7 @@ struct CPDParams {
 
     static CPDParams defaultsElastic() {
         CPDParams p;
-        p.type = CPD_LINEAR;
+        p.type = CPD_ELASTIC;
         p.elastic.w = 0.1;
         p.elastic.maxIterations = 200;
         p.elastic.eDiffRelStop = 1.e-5f;
@@ -194,7 +196,7 @@ void cpdElastic(const FacingPointSets& points, WarpResult& warpResult,
 
 /// `cpd()` dispatches to the appropriate coherent point drift algorithm based
 /// on the `CPDType` stored in `params.type`.
-void cpd(const FacingPointSets& points, WarpResult& warpResult,
-         const CPDParams& params, Context* ctx = 0);
+HXALIGNMICROTUBULES_API void cpd(const FacingPointSets& points, WarpResult& warpResult,
+                                 const CPDParams& params, Context* ctx = 0);
 
 }  // namespace mtalign

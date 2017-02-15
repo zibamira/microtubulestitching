@@ -85,12 +85,12 @@ int SpreadSheetWrapper::getTableIdx(const char* tableID) {
 int SpreadSheetWrapper::parse(Tcl_Interp* t, int argc, char** argv) {
     char* cmd = argv[1];
     if (CMD("setAValue")) {
-        ASSERTARG(6)
+        ASSERTARG(6);
         addEntry(argv[2], argv[3], argv[4], argv[5]);
         return TCL_OK;
     }
     if (CMD("getAValue")) {
-        ASSERTARG(5)
+        ASSERTARG(5);
         McString entry;
         getEntry(argv[2], argv[3], argv[4], entry);
         Tcl_VaSetResult(t, "%s", entry.getString());

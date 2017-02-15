@@ -1,7 +1,7 @@
 #pragma once
 
 #include <mclib/McDArray.h>
-#include <mclib/McVec3f.h>
+#include <mclib/McVec3.h>
 
 #include <hxalignmicrotubules/api.h>
 

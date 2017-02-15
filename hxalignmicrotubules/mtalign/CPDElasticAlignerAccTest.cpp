@@ -1,11 +1,11 @@
 #include <hxalignmicrotubules/mtalign/CPDElasticAligner.h>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <hxcore/TestingData.h>
-#include <hxcore/TestingObjectPoolCleaner.h>
-#include <hxgtest/hxtesting.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <gmock/internal/gmock.h>
+#include <gtest/internal/gtest.h>
+#include <hxcore/internal/TestingData.h>
+#include <hxcore/internal/TestingObjectPoolCleaner.h>
+#include <hxgtest/internal/hxtesting.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 
 #include <hxalignmicrotubules/MicrotubuleSpatialGraphAligner.h>
 #include <hxalignmicrotubules/mtalign.h>
@@ -65,7 +65,7 @@ static ma::Context makeTestingContext() {
 static ma::Context testingContext = makeTestingContext();
 
 // Restrict test to Linux, because sha1 on Windows differs.
-TEST_LINUX(mtalign__CPDElasticAlignerAccTest, shouldComputeKnownResult_E5MS) {
+TEST_LINUX(DISABLED_mtalign__CPDElasticAlignerAccTest, shouldComputeKnownResult_E5MS) {
     TestingObjectPoolCleaner cleaner;
     TestingData sgdat("spatialgraph/fullp0p1.am");
     ASSERT_TRUE(sgdat.dataOk<HxSpatialGraph>());

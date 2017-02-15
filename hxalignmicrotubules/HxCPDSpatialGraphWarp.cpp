@@ -10,17 +10,17 @@
 #include <hxcore/HxInterpreter.h>
 #include <hxcore/HxMessage.h>
 #include <hxcore/HxObjectPool.h>
-#include <hxcore/HxWorkArea.h>
+#include <hxcore/internal/HxWorkArea.h>
 #include <hxfield/HxLoc3Uniform.h>
 #include <hxfield/HxUniformCoord3.h>
 #include <hxfield/HxUniformLabelField3.h>
 #include <hxfield/HxUniformScalarField3.h>
 #include <hxfield/HxUniformVectorField3.h>
-#include <hxlandmark/HxLandmarkSet.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxwarp/HxNearestNeighbourWarp.h>
-#include <hxwarp/HxPolygonWarp.h>
-#include <mclib/McWatch.h>
+#include <hxlandmark/internal/HxLandmarkSet.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxwarp/internal/HxNearestNeighbourWarp.h>
+#include <hxwarp/internal/HxPolygonWarp.h>
+#include <mclib/internal/McWatch.h>
 
 #include <hxalignmicrotubules/mtalign/CPDElasticAligner.h>
 #include <hxalignmicrotubules/mtalign/CPDLinearAligner.h>
@@ -33,19 +33,19 @@ HX_INIT_CLASS(HxCPDSpatialGraphWarp, HxCompModule);
 
 HxCPDSpatialGraphWarp::HxCPDSpatialGraphWarp()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portMethod(this, "method", 4),
-      portBeta(this, "betaParam"),
-      portLambda(this, "lambdaParam"),
-      portW(this, "wParam"),
-      portUseDirection(this, "useDirections", 1),
-      portUseCoords(this, "useCoords", 1),
-      portWithScale(this, "with scaling", 1),
-      portCoupleRcRd(this, "coupleRcAndRd", 1),
-      portEMParams(this, "emParams", 3),
-      portCPDResults(this, "cpdResults", 7),
-      portSampleDist(this, "sampleMinDistForRemove"),
-      portAlphaForMLS(this, "alphaForMLS"),
-      portAction(this, "action") {
+      portMethod(this, "method", tr("Method"), 4),
+      portBeta(this, "betaParam", tr("Beta Param")),
+      portLambda(this, "lambdaParam", tr("Lambda Param")),
+      portW(this, "wParam", tr("W Param")),
+      portUseDirection(this, "useDirections", tr("Use Direction"), 1),
+      portUseCoords(this, "useCoords", tr("Use Coords"), 1),
+      portWithScale(this, "with scaling", tr("With Scaling"), 1),
+      portCoupleRcRd(this, "coupleRcAndRd", tr("Couple Rc And Rd"), 1),
+      portEMParams(this, "emParams", tr("Em Params"), 3),
+      portCPDResults(this, "cpdResults", tr("cpd Results"), 7),
+      portSampleDist(this, "sampleMinDistForRemove", tr("Sample Min Dist for Remove")),
+      portAlphaForMLS(this, "alphaForMLS", tr("Alpha For MLS")),
+      portAction(this, "action", tr("Action")) {
     portAction.setAliasName("doIt");
     portMethod.setLabel(0, "NA");
     portMethod.setLabel(1, "NA");
@@ -96,7 +96,7 @@ HxCPDSpatialGraphWarp::~HxCPDSpatialGraphWarp() {}
 void HxCPDSpatialGraphWarp::update() {}
 
 HxUniformVectorField3* HxCPDSpatialGraphWarp::createOutputVectorDataSet() {
-    HxSpatialGraph* sg = dynamic_cast<HxSpatialGraph*>(portData.source());
+    HxSpatialGraph* sg = dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxUniformVectorField3* output =
         dynamic_cast<HxUniformVectorField3*>(getResult(1));
 
@@ -104,42 +104,42 @@ HxUniformVectorField3* HxCPDSpatialGraphWarp::createOutputVectorDataSet() {
         return (0);
 
     int dims[3];
-    float bbox[6];
+    McBox3f bbox;
 
     if (sg) {
-        sg->getBoundingBox(bbox);
+        bbox = sg->getBoundingBox();
         dims[0] = (bbox[1] - bbox[0]) / 400.0;
         dims[1] = (bbox[3] - bbox[2]) / 400.0;
         dims[2] = 1;
     }
-    if (!output || output->lattice.dimsInt()[0] != dims[0] ||
-        output->lattice.dimsInt()[1] != dims[1] ||
-        output->lattice.dimsInt()[2] != dims[2])
+    if (!output || output->lattice().getDims()[0] != dims[0] ||
+        output->lattice().getDims()[1] != dims[1] ||
+        output->lattice().getDims()[2] != dims[2])
         output = 0;
 
     if (!output) {
-        output = new HxUniformVectorField3(dims, McPrimType::mc_float);
+        output = new HxUniformVectorField3(dims, McPrimType::MC_FLOAT);
     }
-    output->lattice.setBoundingBox(bbox);
+    output->lattice().setBoundingBox(bbox);
     // memcpy(output->bbox(),bbox,6*sizeof(float));
-    output->composeLabel(sg->getLabel().getString(), "Displacement");
+    output->composeLabel(sg->getLabel(), "Displacement");
     setResult(1, output);
     return (output);
 }
 
 HxSpatialGraph* HxCPDSpatialGraphWarp::createOutputDataSet() {
-    HxSpatialGraph* inputSG = dynamic_cast<HxSpatialGraph*>(portData.source());
+    HxSpatialGraph* inputSG = dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxSpatialGraph* warpedSG = dynamic_cast<HxSpatialGraph*>(getResult(0));
 
     if (!inputSG)
         return (0);
 
     if (!warpedSG)
-        warpedSG = new HxSpatialGraph();
+        warpedSG = HxSpatialGraph::createInstance();
     else
         warpedSG->clear();
 
-    warpedSG->composeLabel(inputSG->getLabel().getString(), "Warped");
+    warpedSG->composeLabel(inputSG->getLabel(), "Warped");
     setResult(0, warpedSG);
 
     return warpedSG;
@@ -271,7 +271,7 @@ void HxCPDSpatialGraphWarp::compute() {
     if (!portAction.wasHit())
         return;
 
-    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.source();
+    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.getSource();
 
     if (!inputSG)
         return;
@@ -285,7 +285,7 @@ void HxCPDSpatialGraphWarp::compute() {
 }
 
 void HxCPDSpatialGraphWarp::computeRigidVanMises() {
-    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.source();
+    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.getSource();
 
     ma::SliceSelector selectionHelper(inputSG, "TransformInfo");
 
@@ -375,7 +375,7 @@ void HxCPDSpatialGraphWarp::applyRigidDeformationToSliceVanMises(
 }
 
 void HxCPDSpatialGraphWarp::computeNL() {
-    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.source();
+    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.getSource();
 
     ma::SliceSelector selectionHelper(inputSG, "TransformInfo");
 

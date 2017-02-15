@@ -21,8 +21,8 @@ Open the .sln file in the build.vc9 directory.
 In Visual Studio, right click on the lib_mpir_core2 project and click on "Properties".
 Set "Platform" to Active(x64).
 Go to C++/"Code Generation".
-Set "Runtime Library" to "Multy-threaded Debug DLL (/MDd)" for Debug.
-Set "Runtime Library" to "Multy-threaded DLL (/MD)" for Release.
+Set "Runtime Library" to "Multi-threaded Debug DLL (/MDd)" for Debug.
+Set "Runtime Library" to "Multi-threaded DLL (/MD)" for Release.
 Repeat this step for lib_mpir_cxx.
 
 Build both projects.

@@ -4,8 +4,8 @@
 
 #include <hxcore/HxMessage.h>
 #include <hxcore/HxObjectPool.h>
-#include <hxspatialgraph/HierarchicalLabels.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HierarchicalLabels.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 
 #include <hxalignmicrotubules/HxComparePointMatchings.h>
 #include <hxalignmicrotubules/HxTestPointMatching.h>
@@ -15,19 +15,19 @@ HX_INIT_CLASS(HxIteratePointMatchingUntilConvergence, HxCompModule);
 
 HxIteratePointMatchingUntilConvergence::HxIteratePointMatchingUntilConvergence()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portEvidenceHeuristic(this, "EvidenceHeuristic", 1),
-      portNumIterations(this, "numIterations", 1),
-      connectionToFEModule(this, "FESteeringModule", HxCompModule::getTypeId()),
-      connectionToPMEvalModule(this, "PMComparisonModule",
+      portEvidenceHeuristic(this, "EvidenceHeuristic", tr("Evidence Heuristic"), 1),
+      portNumIterations(this, "numIterations", tr("Num Iterations"), 1),
+      connectionToFEModule(this, "FESteeringModule", tr("FE Steering Module"), HxCompModule::getTypeId()),
+      connectionToPMEvalModule(this, "PMComparisonModule", tr("PM Comparaison Module"),
                                HxCompModule::getTypeId()),
-      mDoIt(this, "apply") {
-    HxTestPointMatching* testModule = new HxTestPointMatching();
+      mDoIt(this, "apply", tr("Apply")) {
+    HxTestPointMatching* testModule = HxTestPointMatching::createInstance();
     theObjectPool->addObject(testModule);
     connectionToFEModule.connect(testModule);
     testModule->setLabel("FEModule");
     connectionToFEModule.setTightness(1);
 
-    HxComparePointMatchings* compareModule = new HxComparePointMatchings();
+    HxComparePointMatchings* compareModule = HxComparePointMatchings::createInstance();
     theObjectPool->addObject(compareModule);
     connectionToPMEvalModule.connect(compareModule);
     compareModule->setLabel("ComparisonModule");
@@ -42,13 +42,13 @@ void HxIteratePointMatchingUntilConvergence::compute() {
     if (!mDoIt.wasHit()) {
         return;
     }
-    if (portData.source() == NULL) {
+    if (portData.getSource() == NULL) {
         return;
     }
 
     int numberOfNeededEvidenceAssignments = 1;
 
-    McHandle<SpreadSheetWrapper> resultSpreadSheet = new SpreadSheetWrapper();
+    McHandle<SpreadSheetWrapper> resultSpreadSheet = SpreadSheetWrapper::createInstance();
 
     int numIterations = 0;
 
@@ -86,10 +86,10 @@ void HxIteratePointMatchingUntilConvergence::compute() {
             qPrintable(QString(portEvidenceHeuristic.getLabel(
                 portEvidenceHeuristic.getValue()))),
             "Assigned", rowId, numAssigned);
-        McString alignResultsName(portData.source()->getLabel().dataPtr());
+        QString alignResultsName(portData.getSource()->getLabel());
         alignResultsName += "-alignResults";
-        theMsg->printf("Remove %s", alignResultsName.dataPtr());
-        HxObject* obj = theObjectPool->findObject(alignResultsName.dataPtr());
+        theMsg->printf("Remove %s", qPrintable(alignResultsName));
+        HxObject* obj = theObjectPool->findObject(alignResultsName);
         if (obj)
             theObjectPool->removeObject(obj);
         theObjectPool->removeObject(compareModule->getResult());
@@ -170,9 +170,9 @@ void HxIteratePointMatchingUntilConvergence::update() {
     if (portData.isNew()) {
         HxCompModule* cm =
             hxconnection_cast<HxCompModule>(connectionToPMEvalModule);
-        cm->portData.connect(portData.source());
+        cm->portData.connect(portData.getSource());
         cm = hxconnection_cast<HxCompModule>(connectionToFEModule);
-        cm->portData.connect(portData.source());
+        cm->portData.connect(portData.getSource());
         updateEvidenceToAssignPort();
     }
 }
@@ -215,7 +215,7 @@ void HxIteratePointMatchingUntilConvergence::addEvidence(const int node1,
 
     EdgeVertexAttribute* att =
         dynamic_cast<EdgeVertexAttribute*>(graph->addAttribute(
-            "Evidence", HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            "Evidence", HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     att->setIntDataAtIdx(node1, val);
     if (node2 > -1)
         att->setIntDataAtIdx(node2, val);

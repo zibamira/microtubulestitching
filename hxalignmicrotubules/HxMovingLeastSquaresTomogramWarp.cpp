@@ -5,10 +5,10 @@
 #include <QFileInfo>
 #include <QRegExp>
 
-#include <hxcore/HxWorkArea.h>
+#include <hxcore/internal/HxWorkArea.h>
 #include <hxfield/HxFieldEvaluator.h>
 #include <hxfield/HxUniformScalarField3.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 #include <mclib/McHandle.h>
 
 #include <hxtemplatematchingutil/orientation3intcode.h>
@@ -21,9 +21,13 @@ HX_INIT_CLASS(HxMovingLeastSquaresTomogramWarp, HxCompModule);
 
 HxMovingLeastSquaresTomogramWarp::HxMovingLeastSquaresTomogramWarp()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portTomogram(this, "tomogram", HxUniformScalarField3::getClassTypeId()),
-      portTransform(this, "transform", 1),
-      portAction(this, "action") {}
+      portTomogram(this, "tomogram", tr("Tomogram"), HxUniformScalarField3::getClassTypeId()),
+      portTransform(this, "transform", tr("Transform"), 1),
+      portAction(this, "action", tr("Action")) {}
+
+HxMovingLeastSquaresTomogramWarp::~HxMovingLeastSquaresTomogramWarp()
+{
+}
 
 void HxMovingLeastSquaresTomogramWarp::update() {
     HxSpatialGraph* sg = hxconnection_cast<HxSpatialGraph>(portData);
@@ -44,13 +48,11 @@ void HxMovingLeastSquaresTomogramWarp::update() {
 static McHandle<HxUniformScalarField3>
 makeFieldCoveringXYAndTranslatedInZ(const HxUniformScalarField3* tomogram,
                                     const HxSpatialData* sg, float zshift) {
-    const int* dimsTomo = tomogram->lattice.dims();
+    const McDim3l& dimsTomo = tomogram->lattice().getDims();
     const McVec3f vs = tomogram->getVoxelSize();
-    float bboxTomo[6];
-    tomogram->getBoundingBox(bboxTomo);
+    const McBox3f& bboxTomo = tomogram->getBoundingBox();
 
-    float bboxSG[6];
-    sg->getBoundingBox(bboxSG);
+    const McBox3f& bboxSG = sg->getBoundingBox();
 
     int dims[3];
     for (int d = 0; d < 2; d++) {
@@ -68,7 +70,7 @@ makeFieldCoveringXYAndTranslatedInZ(const HxUniformScalarField3* tomogram,
 
     McHandle<HxUniformScalarField3> result(
         new HxUniformScalarField3(dims, tomogram->primType()));
-    result->lattice.setBoundingBox(bbox);
+    result->lattice().setBoundingBox(bbox);
 
     return result;
 }
@@ -98,8 +100,8 @@ applyMLS(HxUniformScalarField3* tomogram,
     const HxMovingLeastSquaresTomogramWarp::TransformInfos& infos =
         transformations[sliceNum];
     const SbMatrix transformedTomogramToTomogram = infos.matrix.inverse();
-    const HxCoord3* coords = result->lattice.coords();
-    const int* dims = result->lattice.dims();
+    const HxCoord3* coords = result->lattice().coords();
+    const McDim3l& dims = result->lattice().getDims();
 
 #pragma omp parallel
     {
@@ -111,8 +113,7 @@ applyMLS(HxUniformScalarField3* tomogram,
                 continue;
 
             for (int i = 0; i < dims[0]; i++) {
-                McVec3f pos;
-                coords->pos(i, j, 0, &pos[0]);
+                McVec3f pos = coords->pos(McVec3i(i, j, 0));
 
                 // MicrotubuleSpatialGraphAligner::applyMLS() applies
                 // transforms T0, ..., Tn to create the transformed point t
@@ -136,7 +137,7 @@ applyMLS(HxUniformScalarField3* tomogram,
                 }
 
                 for (int k = 0; k < dims[2]; k++) {
-                    coords->pos(i, j, k, &pos[0]);
+                    pos = coords->pos(McVec3i(i, j, k));
                     const SbVec3f posTransformedTomogram(warpedCoord.x,
                                                          warpedCoord.y, pos[2]);
                     SbVec3f posTomogram;
@@ -146,7 +147,7 @@ applyMLS(HxUniformScalarField3* tomogram,
                     float resultValue = 0;
                     if (locationIn->set(posTomogram[0], posTomogram[1],
                                         posTomogram[2])) {
-                        tomogram->eval(locationIn, &resultValue);
+                        tomogram->eval(*locationIn, &resultValue);
                     }
                     result->set(i, j, k, resultValue);
                 }
@@ -212,8 +213,8 @@ applyMLSIntVecs(HxUniformScalarField3* tomogram,
                 std::map<int, HxMovingLeastSquaresTomogramWarp::TransformInfos>&
                     transformations,
                 int sliceNum, HxUniformScalarField3* result) {
-    mcrequire(tomogram->primType() == McPrimType::mc_uint32);
-    mcrequire(result->primType() == McPrimType::mc_uint32);
+    mcrequire(tomogram->primType() == McPrimType::MC_UINT32);
+    mcrequire(result->primType() == McPrimType::MC_UINT32);
 
     bool aborted = false;
     int numIteration = 0;
@@ -241,11 +242,11 @@ applyMLSIntVecs(HxUniformScalarField3* tomogram,
         dPhiTransform = defaultDegRange(-phiDeg(McVec2d(origex[0], origex[1])));
     }
 
-    const HxCoord3* coords = result->lattice.coords();
-    const int* dimsInt = result->lattice.dimsInt();
-    const mculong* dims = result->lattice.dimsLong();
+    const HxCoord3* coords = result->lattice().coords();
+    const McDim3l& dimsInt = result->lattice().getDims();
+    const McDim3l& dims = result->lattice().getDims();
 
-    mcuint32* resdat = static_cast<mcuint32*>(result->lattice.dataPtr());
+    mcuint32* resdat = static_cast<mcuint32*>(result->lattice().dataPtr());
 
 #pragma omp parallel
     {
@@ -258,8 +259,7 @@ applyMLSIntVecs(HxUniformScalarField3* tomogram,
                 continue;
 
             for (int i = 0; i < dimsInt[0]; i++) {
-                McVec3f pos;
-                coords->pos(i, j, 0, &pos[0]);
+                McVec3f pos = coords->pos(McVec3i(i, j, 0));
 
                 McVec2d warpedCoord(pos[0], pos[1]);
                 const McVec2d ex(1.0, 0);
@@ -277,7 +277,7 @@ applyMLSIntVecs(HxUniformScalarField3* tomogram,
                 const float dPhiWarp = defaultDegRange(-phiDeg(origex));
 
                 for (int k = 0; k < dimsInt[2]; k++) {
-                    coords->pos(i, j, k, &pos[0]);
+                    pos = coords->pos(McVec3i(i, j, k));
                     const SbVec3f posTransformedTomogram(warpedCoord.x,
                                                          warpedCoord.y, pos[2]);
                     SbVec3f posTomogram;
@@ -339,9 +339,9 @@ void HxMovingLeastSquaresTomogramWarp::compute() {
 
     McHandle<HxUniformScalarField3> result(
         makeFieldCoveringXYAndTranslatedInZ(tomogram, sg, translation[2]));
-    result->composeLabel(tomogram->getLabel().getString(), "warped");
+    result->composeLabel(tomogram->getLabel(), "warped");
 
-    if (tomogram->primType() == McPrimType::mc_uint32) {
+    if (tomogram->primType() == McPrimType::MC_UINT32) {
         theMsg->printf("Assuming int-encoded vectors.");
         applyMLSIntVecs(tomogram, transformations, sliceNum, result);
     } else {
@@ -360,22 +360,22 @@ HxMovingLeastSquaresTomogramWarp::extractParameters(const HxSpatialGraph* sg) {
 
     // Extract global slices transformations.
     const HxParamBundle* transformInfoPB =
-        sg->parameters.bundle("TransformInfo");
+        sg->parameters.getBundle("TransformInfo");
     if (!transformInfoPB) {
         theMsg->printf("Error: could not find TransformInfo parameter bundle");
         return;
     }
 
-    for (int i = 0; i < transformInfoPB->nBundles(); i++) {
-        HxParamBundle* sliceInfo = transformInfoPB->bundle(i);
-        QString name = sliceInfo->name();
+    for (int i = 0; i < transformInfoPB->getNumberOfBundles(); i++) {
+        HxParamBundle* sliceInfo = transformInfoPB->getBundle(i);
+        QString name = sliceInfo->getName();
         QRegExp rx("Slice[0-9]{4}");
         if (rx.exactMatch(name)) {
             const mclong index = name.mid(5).toInt() - 1;
 
             TransformInfos& info = transformations[index];
             const HxParameter* transfo = sliceInfo->find("Transform");
-            if (transfo && transfo->dim() == 16) {
+            if (transfo && transfo->getDimension() == 16) {
                 info.name = name;
 
                 double res[16];
@@ -404,7 +404,7 @@ HxMovingLeastSquaresTomogramWarp::extractParameters(const HxSpatialGraph* sg) {
     // Extract MLS infos
     ////////////////////////////////////////////////////////////////////////////////////////////////
     const HxParamBundle* CPDTransformLandmarks =
-        sg->parameters.bundle("CPDTransformLandmarks");
+        sg->parameters.getBundle("CPDTransformLandmarks");
     if (!CPDTransformLandmarks) {
         theMsg->printf(
             "Error: could not find CPDTransformLandmarks parameter bundle");
@@ -417,9 +417,9 @@ HxMovingLeastSquaresTomogramWarp::extractParameters(const HxSpatialGraph* sg) {
                        "default 2.");
     }
 
-    for (int i = 0; i < CPDTransformLandmarks->nBundles(); i++) {
-        const HxParamBundle* sliceInfo = CPDTransformLandmarks->bundle(i);
-        const QString name = sliceInfo->name();
+    for (int i = 0; i < CPDTransformLandmarks->getNumberOfBundles(); i++) {
+        const HxParamBundle* sliceInfo = CPDTransformLandmarks->getBundle(i);
+        const QString name = sliceInfo->getName();
 
         const QRegExp rx("Slices([0-9]+)-([0-9]+)");
         if (rx.exactMatch(name)) {
@@ -444,16 +444,16 @@ HxMovingLeastSquaresTomogramWarp::extractParameters(const HxSpatialGraph* sg) {
 
             info.mls.setAlpha(alpha);
             McDArray<McVec2d> ps;
-            ps.resize(sliceInfo->size());
+            ps.resize(sliceInfo->getSize());
             McDArray<McVec2d> qs;
-            qs.resize(sliceInfo->size());
+            qs.resize(sliceInfo->getSize());
             bool ok = true;
-            for (int j = 0; j < sliceInfo->size(); j++) {
+            for (int j = 0; j < sliceInfo->getSize(); j++) {
                 HxParameter* PQ = static_cast<HxParameter*>((*sliceInfo)[j]);
-                if (PQ->dim() != 4) {
+                if (PQ->getDimension() != 4) {
                     theMsg->printf("Error: invalid number of entries in "
                                    "CPDTransformLandmarks %s, %s (expected 4).",
-                                   qPrintable(name), PQ->name());
+                                   qPrintable(name), qPrintable(PQ->getName()));
                     ok = false;
                     break;
                 }
@@ -462,7 +462,7 @@ HxMovingLeastSquaresTomogramWarp::extractParameters(const HxSpatialGraph* sg) {
 
                 // !! We read PQ but store QP since we need the invert
                 // transform. !!
-                int index = QString(PQ->name()).mid(2).toInt();
+                int index = QString(PQ->getName()).mid(2).toInt();
                 qs[index].setValue(res[0], res[1]);
                 ps[index].setValue(res[2], res[3]);
             }

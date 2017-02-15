@@ -3,6 +3,8 @@
 #include <Inventor/actions/SoSearchAction.h>
 #include <Inventor/draggers/SoTransformerDragger.h>
 
+#include <hxspatialgraph/internal/HxSpatialGraphInterface.h>
+
 HX_INIT_CLASS(HxManualMTAlign, HxCompModule);
 
 SbRotation HxManualMTAlign::mRot = SbRotation();
@@ -17,6 +19,10 @@ HxManualMTAlign::HxManualMTAlign()
       mNodeScaleFactor(1.0f),
       mShowNodes(true),
       mShowSegments(true) {}
+
+HxManualMTAlign::~HxManualMTAlign()
+{
+}
 
 void HxManualMTAlign::compute() {
     if (portData.isNew()) {

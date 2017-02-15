@@ -1,7 +1,7 @@
 #include <hxalignmicrotubules/MovingLeastSquares.h>
 
 #include <hxfield/HxUniformVectorField3.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 
 #include <hxalignmicrotubules/mtalign/SliceSelector.h>
 #include <hxalignmicrotubules/HxMovingLeastSquaresSpatialGraphWarp.h>
@@ -10,9 +10,9 @@ HX_INIT_CLASS(HxMovingLeastSquaresSpatialGraphWarp, HxCompModule);
 
 HxMovingLeastSquaresSpatialGraphWarp::HxMovingLeastSquaresSpatialGraphWarp()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portMethod(this, "method", 1),
-      portAlpha(this, "parameter"),
-      portAction(this, "action") {
+      portMethod(this, "method", tr("Method"), 1),
+      portAlpha(this, "parameter", tr("Parameter")),
+      portAction(this, "action", tr("Action")) {
     portAction.setAliasName("doIt");
     portMethod.setLabel(0, "Rigid");
     portAlpha.setLabel("Alpha:");
@@ -26,7 +26,7 @@ void HxMovingLeastSquaresSpatialGraphWarp::update() {}
 
 HxUniformVectorField3*
 HxMovingLeastSquaresSpatialGraphWarp::createOutputVectorDataSet() {
-    HxSpatialGraph* sg = dynamic_cast<HxSpatialGraph*>(portData.source());
+    HxSpatialGraph* sg = dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxUniformVectorField3* output =
         dynamic_cast<HxUniformVectorField3*>(getResult(1));
 
@@ -34,41 +34,41 @@ HxMovingLeastSquaresSpatialGraphWarp::createOutputVectorDataSet() {
         return (0);
 
     int dims[3];
-    float bbox[6];
+    McBox3f bbox;
 
     if (sg) {
-        sg->getBoundingBox(bbox);
+        bbox = sg->getBoundingBox();
         dims[0] = (bbox[1] - bbox[0]) / 400.0;
         dims[1] = (bbox[3] - bbox[2]) / 400.0;
         dims[2] = 1;
     }
-    if (!output || output->lattice.dimsInt()[0] != dims[0] ||
-        output->lattice.dimsInt()[1] != dims[1] ||
-        output->lattice.dimsInt()[2] != dims[2])
+    if (!output || output->lattice().getDims()[0] != dims[0] ||
+        output->lattice().getDims()[1] != dims[1] ||
+        output->lattice().getDims()[2] != dims[2])
         output = 0;
 
     if (!output) {
-        output = new HxUniformVectorField3(dims, McPrimType::mc_float);
+        output = new HxUniformVectorField3(dims, McPrimType::MC_FLOAT);
     }
-    output->lattice.setBoundingBox(bbox);
+    output->lattice().setBoundingBox(bbox);
     // memcpy(output->bbox(),bbox,6*sizeof(float));
-    output->composeLabel(sg->getLabel().getString(), "Displacement");
+    output->composeLabel(sg->getLabel(), "Displacement");
     setResult(1, output);
     return (output);
 }
 
 HxSpatialGraph* HxMovingLeastSquaresSpatialGraphWarp::createOutputDataSet() {
-    HxSpatialGraph* inputSG = dynamic_cast<HxSpatialGraph*>(portData.source());
+    HxSpatialGraph* inputSG = dynamic_cast<HxSpatialGraph*>(portData.getSource());
     HxSpatialGraph* warpedSG = dynamic_cast<HxSpatialGraph*>(getResult(0));
 
     if (!inputSG)
         return (0);
     if (!warpedSG)
-        warpedSG = new HxSpatialGraph();
+        warpedSG = HxSpatialGraph::createInstance();
     else
         warpedSG->clear();
 
-    warpedSG->composeLabel(inputSG->getLabel().getString(), "Warped");
+    warpedSG->composeLabel(inputSG->getLabel(), "Warped");
     setResult(0, warpedSG);
     return (warpedSG);
 }
@@ -145,7 +145,7 @@ void HxMovingLeastSquaresSpatialGraphWarp::compute() {
         return;
 
     // Der Volumendatensatz
-    HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.source();
+    HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.getSource();
 
     if (!inputSG)
         return;

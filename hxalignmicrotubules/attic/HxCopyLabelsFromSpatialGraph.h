@@ -13,8 +13,6 @@ class HXALIGNMICROTUBULES_API HxCopyLabelsFromSpatialGraph
     HX_HEADER(HxCopyLabelsFromSpatialGraph);
 
   public:
-    HxCopyLabelsFromSpatialGraph(void);
-    ~HxCopyLabelsFromSpatialGraph(void);
 
     void compute();
     /// for tcl commands

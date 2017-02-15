@@ -4,13 +4,13 @@
 
 #include <QString>
 
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphSelection.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphSelection.h>
 #include <mclib/McDArray.h>
-#include <mclib/McString.h>
+#include <mclib/internal/McString.h>
 
 #include <hxalignmicrotubules/mtalign.h>
-#include <hxspatialgraph/HierarchicalLabels.h>
+#include <hxspatialgraph/internal/HierarchicalLabels.h>
 #include <hxalignmicrotubules/mtalign/PGMPairWeights.h>
 
 namespace ma = mtalign;
@@ -95,8 +95,8 @@ getAssignments(const EdgeVertexAttribute* attr,
 
 static void clearAttribute(HxSpatialGraph* sg, const SpatialGraphSelection& sel,
                            const char* attName, const McPrimType primType) {
-    mcrequire(primType == McPrimType::mc_int32 ||
-              primType == McPrimType::mc_float);
+    mcrequire(primType == McPrimType::MC_INT32 ||
+              primType == McPrimType::MC_FLOAT);
 
     EdgeVertexAttribute* attrib = dynamic_cast<EdgeVertexAttribute*>(
         sg->addAttribute(attName, HxSpatialGraph::VERTEX, primType, 1));
@@ -105,7 +105,7 @@ static void clearAttribute(HxSpatialGraph* sg, const SpatialGraphSelection& sel,
 
     for (int i = 0; i < sel.getNumSelectedVertices(); i++) {
         const int curVertex = sel.getSelectedVertex(i);
-        if (primType == McPrimType::mc_int32) {
+        if (primType == McPrimType::MC_INT32) {
             attrib->setIntDataAtIdx(curVertex, 0);
         } else {
             attrib->setFloatDataAtIdx(curVertex, 0);
@@ -134,7 +134,7 @@ static void clearAttributes(HxSpatialGraph* sg,
     for (unsigned int i = 0; i < sizeof(attrs) / sizeof(attrs[0]); ++i) {
         const Descr a = attrs[i];
         const McPrimType primType =
-            (a.ty == 'i') ? McPrimType::mc_int32 : McPrimType::mc_float;
+            (a.ty == 'i') ? McPrimType::MC_INT32 : McPrimType::MC_FLOAT;
         clearAttribute(sg, sel, a.name, primType);
     }
 }
@@ -144,7 +144,7 @@ static void rewritePairs(HxSpatialGraph* sg, const McDArray<McVec2i>& newPairs,
 
     EdgeVertexAttribute* att =
         dynamic_cast<EdgeVertexAttribute*>(sg->addAttribute(
-            pairsName, HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            pairsName, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
 
     HierarchicalLabels* labelGroup = NULL;
     sg->addNewLabelGroup(pairsName, false, true);
@@ -207,7 +207,7 @@ static void rewriteBinaryLabel(HxSpatialGraph* sg,
                                const char* labelName) {
     EdgeVertexAttribute* att =
         dynamic_cast<EdgeVertexAttribute*>(sg->addAttribute(
-            labelName, HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            labelName, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     mcassert(att);
     sg->addNewLabelGroup(labelName, false, true);
     HierarchicalLabels* labelGroup = sg->getLabelGroup(labelName);
@@ -239,12 +239,12 @@ static void writeFloatAttribute(HxSpatialGraph* sg,
                                 const char* labelNameZero) {
     EdgeVertexAttribute* attrib =
         dynamic_cast<EdgeVertexAttribute*>(sg->addAttribute(
-            labelName, HxSpatialGraph::VERTEX, McPrimType::mc_float, 1));
+            labelName, HxSpatialGraph::VERTEX, McPrimType::MC_FLOAT, 1));
     mcassert(attrib);
 
     EdgeVertexAttribute* attribZero =
         dynamic_cast<EdgeVertexAttribute*>(sg->addAttribute(
-            labelNameZero, HxSpatialGraph::VERTEX, McPrimType::mc_int32, 1));
+            labelNameZero, HxSpatialGraph::VERTEX, McPrimType::MC_INT32, 1));
     mcassert(attribZero);
 
     for (int i = 0; i < onNodeIds.size(); i++) {

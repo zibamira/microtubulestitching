@@ -1,11 +1,13 @@
 set PACKAGE {hxalignmicrotubules}
-set LABELS {spatialgraph}
+set LABELS {microtubulestitching spatialgraph}
 
 set LIBS {
     pointmatching
     hxspatialgraph
     hxneuroneditor
+    hxspreadsheet
     hxcore
+    hxworkroom
     amiramesh
     mclib
     qt
@@ -43,44 +45,20 @@ set DEFINES-MacX {
 set SRC {
     *.cpp
     mtalign/*.cpp
+    attic/*.cpp
+    examples/*.cpp
 }
 
 set INCSRC {
     *.h
     mtalign/*.h
-}
-
-# Exclude attic for Amira 5 builds,  because old init.cpp does not work with
-# subdirs.
-if { [passLabelFilter apiAmiraGreater5] } {
-  append SRC {
-    attic/*.cpp
-    examples/*.cpp
-  }
-  append INCSRC {
     attic/*.h
-  }
 }
 
 set SHARE {
     share/script-objects/*.scro
     share/resources/hxalignmicrotubules.rc
 }
-
-if { [passLabelFilter apiAmiraGreater5] } {
-  append LIBS {
-    hxspreadsheet
-  }
-} else {
-  append LIBS {
-    hxstatistics
-  }
-
-  set DEFINES {
-    HX_AMIRA5_COMPAT
-  }
-}
-
 
 set TESTLIBS {
     gtest

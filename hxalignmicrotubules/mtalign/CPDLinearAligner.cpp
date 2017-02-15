@@ -2,10 +2,10 @@
 
 #include <QString>
 
-#include <mcla/f77_blas.h>
-#include <mcla/f77_lapack.h>
-#include <mclib/McVec2d.h>
-#include <mclib/McWatch.h>
+#include <mcla/internal/f77_blas.h>
+#include <mcla/internal/f77_lapack.h>
+#include <mclib/McVec2.h>
+#include <mclib/internal/McWatch.h>
 
 #include <coin/IpIpoptApplication.hpp>
 #include <hxalignmicrotubules/mtalign/IPOPTForCPD.h>
@@ -470,8 +470,7 @@ McVec3f ma::CPDLinearAligner::warpPoint(const McVec3f& point,
 
 McMat4f ma::CPDLinearAligner::getTransformMat4f(McDMatrix<double> R, double s,
                                                 McDVector<double> t) {
-    McMat4f mat;
-    mat.makeIdentity();
+    McMat4f mat = McMat4f::IDENTITY;
     t *= mMeansAndStds.stdC;
     t[0] += mMeansAndStds.meanC[0];
     t[1] += mMeansAndStds.meanC[1];

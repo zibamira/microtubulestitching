@@ -8,8 +8,8 @@
 #include <hxcore/HxMessage.h>
 #include <hxcore/HxObjectPool.h>
 #include <hxcore/HxPortDoIt.h>
-#include <hxcore/HxWorkArea.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxcore/internal/HxWorkArea.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 
 #include <hxalignmicrotubules/MovingLeastSquares.h>
 #include <hxalignmicrotubules/mtalign.h>
@@ -19,7 +19,6 @@ namespace ma = mtalign;
 class HxCPDAlignerExample : public HxCompModule {
     HX_HEADER(HxCPDAlignerExample);
   public:
-    HxCPDAlignerExample();
 
     HxPortDoIt portAction;
 
@@ -36,7 +35,11 @@ HxCPDAlignerExample::HxCPDAlignerExample()
 static void printMsg(QString msg) {
     printf("%s\n", qPrintable(msg));
     theMsg->printf(msg);
-    theWorkArea->handlePendingEvents();  // Update GUI.
+    theApp->handlePendingEvents();
+}
+
+HxCPDAlignerExample::~HxCPDAlignerExample()
+{
 }
 
 void HxCPDAlignerExample::compute() {
@@ -44,7 +47,7 @@ void HxCPDAlignerExample::compute() {
         return;
     }
 
-    HxSpatialGraph* in = mcinterface_cast<HxSpatialGraph>(portData.source());
+    HxSpatialGraph* in = mcinterface_cast<HxSpatialGraph>(portData.getSource());
     if (!in) {
         return;
     }

@@ -2,15 +2,15 @@
 
 #include <vector>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include <gmock/internal/gmock.h>
+#include <gtest/internal/gtest.h>
 
-#include <hxcore/TestingData.h>
-#include <hxcore/TestingObjectPoolCleaner.h>
-#include <hxgtest/hxtesting.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
-#include <hxspatialgraph/SpatialGraphSelection.h>
-#include <mclib/TestingDevNullRedirect.h>
+#include <hxcore/internal/TestingData.h>
+#include <hxcore/internal/TestingObjectPoolCleaner.h>
+#include <hxgtest/internal/hxtesting.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/SpatialGraphSelection.h>
+#include <mclib/internal/TestingDevNullRedirect.h>
 
 #include <hxalignmicrotubules/mtalign.h>
 

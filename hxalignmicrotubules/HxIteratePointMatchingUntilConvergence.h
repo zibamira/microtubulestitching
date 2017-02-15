@@ -13,9 +13,6 @@ class HXALIGNMICROTUBULES_API HxIteratePointMatchingUntilConvergence
     HX_HEADER(HxIteratePointMatchingUntilConvergence);
 
   public:
-    HxIteratePointMatchingUntilConvergence();
-
-    ~HxIteratePointMatchingUntilConvergence();
 
     void compute();
 

@@ -1,9 +1,8 @@
 #pragma once
 
 #include <mclib/McDArray.h>
-
-class McVec3f;
-class McVec2i;
+#include <mclib/McVec3.h>
+#include <mclib/McVec2i.h>
 
 namespace mtalign {
 

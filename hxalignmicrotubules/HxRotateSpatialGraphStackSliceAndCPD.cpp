@@ -1,7 +1,7 @@
 #include <hxalignmicrotubules/HxRotateSpatialGraphStackSliceAndCPD.h>
 
 #include <hxcore/HxObjectPool.h>
-#include <hxspatialgraph/HxSpatialGraph.h>
+#include <hxspatialgraph/internal/HxSpatialGraph.h>
 #include <mclib/McMat3f.h>
 
 #include <hxalignmicrotubules/HxCPDSpatialGraphWarp.h>
@@ -12,17 +12,17 @@ HX_INIT_CLASS(HxRotateSpatialGraphStackSliceAndCDP, HxCompModule);
 
 HxRotateSpatialGraphStackSliceAndCDP::HxRotateSpatialGraphStackSliceAndCDP()
     : HxCompModule(HxSpatialGraph::getClassTypeId()),
-      portMethod(this, "method", 4),
-      portBeta(this, "betaParam"),
-      portLambda(this, "lambdaParam"),
-      portW(this, "wParam"),
-      portUseDirection(this, "useDirections", 1),
-      portUseCoords(this, "useCoords", 1),
-      portWithScale(this, "with scaling", 1),
-      portCoupleRcRd(this, "coupleRcAndRd", 1),
-      portEMParams(this, "emParams", 3),
-      portRotationAngles(this, "rotation(from-by-to)", 3),
-      portAction(this, "action") {
+      portMethod(this, "method", tr("Method"), 4),
+      portBeta(this, "betaParam", tr("Beta Param")),
+      portLambda(this, "lambdaParam", tr("Lambda Param")),
+      portW(this, "wParam", tr("W Param")),
+      portUseDirection(this, "useDirections", tr("Use Direction"), 1),
+      portUseCoords(this, "useCoords", tr("Use Coords"), 1),
+      portWithScale(this, "with scaling", tr("With Scaling"), 1),
+      portCoupleRcRd(this, "coupleRcAndRd", tr("Couple Rc And Rd"), 1),
+      portEMParams(this, "emParams", tr("Em Params"), 3),
+      portRotationAngles(this, "rotation(from-by-to)", tr("Rotation (from-by-to)"), 3),
+      portAction(this, "action", tr("Action")) {
     portAction.setAliasName("doIt");
     portMethod.setLabel(0, "NA");
     portMethod.setLabel(1, "NA");
@@ -68,12 +68,12 @@ void HxRotateSpatialGraphStackSliceAndCDP::compute() {
     if (!portAction.wasHit())
         return;
 
-    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.source();
+    const HxSpatialGraph* inputSG = (HxSpatialGraph*)portData.getSource();
 
     if (!inputSG)
         return;
 
-    HxCPDSpatialGraphWarp* warpModule = new HxCPDSpatialGraphWarp();
+    HxCPDSpatialGraphWarp* warpModule = HxCPDSpatialGraphWarp::createInstance();
     warpModule->portMethod.setValue(portMethod.getValue());
     warpModule->portBeta.setValue(portBeta.getValue());
     warpModule->portCoupleRcRd.setValue(portCoupleRcRd.getValue());
@@ -92,7 +92,7 @@ void HxRotateSpatialGraphStackSliceAndCDP::compute() {
     HxSpatialGraph* rotatedSG = inputSG->duplicate();
     this->setResult(rotatedSG);
     McString rotatedString;
-    McHandle<SpreadSheetWrapper> resultSpreadSheet = new SpreadSheetWrapper();
+    McHandle<SpreadSheetWrapper> resultSpreadSheet = SpreadSheetWrapper::createInstance();
     int rowID = 0;
     for (double i = portRotationAngles.getValue(0);
          i < portRotationAngles.getValue(2);
@@ -102,7 +102,7 @@ void HxRotateSpatialGraphStackSliceAndCDP::compute() {
             theObjectPool->removeObject(warped);
         rotatedSG->copyFrom(inputSG);
         rotatedString.printf("rotated%fdegree", i);
-        rotatedSG->setLabel(rotatedString);
+        rotatedSG->setLabel(rotatedString.getString());
         rotateSlice(rotatedSG, i / 180.0 * M_PI);
         theObjectPool->addObject(rotatedSG);
         warpModule->portData.connect(rotatedSG);
@@ -138,8 +138,7 @@ void HxRotateSpatialGraphStackSliceAndCDP::rotateSlice(HxSpatialGraph* graph,
     mtalign::SliceSelector ssh(graph, "TransformInfo");
     SpatialGraphSelection fullSliceSelection;
     ssh.getSlice(ssh.getSliceAttributeValueFromIndex(1), fullSliceSelection);
-    McMat3f rotMat;
-    rotMat.makeIdentity();
+    McMat3f rotMat = McMat3f::IDENTITY;
     rotMat[0][0] = cos(angle);
     rotMat[0][1] = -sin(angle);
     rotMat[1][0] = sin(angle);
